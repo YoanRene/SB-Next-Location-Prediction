@@ -1,1 +1,248 @@
 \chapter{Propuesta}\label{chapter:proposal}
+\section{Definición del Problema}
+
+Introducimos un conjunto de términos y nociones 
+utilizados en el resto del documento y formulamos el problema de 
+predicción de la siguiente ubicación. Los datos de movilidad se 
+recopilan típicamente a través de dispositivos electrónicos y se 
+almacenan como trayectorias espacio-temporales. Cada punto de 
+seguimiento en la trayectoria de un usuario contiene un par de 
+coordenadas espaciales y una marca de tiempo.\\
+
+\textbf{Definición 1 (Trayectoria GNSS\footnote{GNSS: Global Navigation Satellite System}).} 
+Sea $u_i$ un usuario del conjunto de usuarios 
+$\mathcal{U} = \{u_1, \dots, u_{|\mathcal{U}|} \}$, una trayectoria 
+$T_i = (q_k)_{k=1}^{n_{u_i}}$ es una secuencia ordenada en el 
+tiempo compuesta por $n_{u_i}$ puntos de seguimiento visitados por
+el usuario $u_i$. Un punto de seguimiento se puede representar 
+como una 
+tupla $q = \langle p, t \rangle$, donde $p = \langle x, y \rangle$ 
+representa las coordenadas espaciales en un sistema de referencia, 
+en este caso latitud y longitud, y $t$ es el tiempo de registro.\\
+
+Los puntos de permanencia se detectan a partir de trayectorias GNSS 
+sin procesar para identificar áreas donde los usuarios permanecen 
+estacionarios durante un período mínimo de tiempo (\cite{li2008mining}). 
+Luego, las ubicaciones se forman mediante la agregación espacial 
+de puntos de permanencia para caracterizar la semántica del lugar (\cite{hariharan2004project,martin2023trackintel}).
+\newpage
+\textbf{Definición 2 (Punto de Permanencia).} 
+Un punto de permanencia $S = (q_k)_{k=start}^{end}$ es una 
+subsecuencia de la trayectoria $T_i$ donde el usuario $u_i$ estuvo 
+estacionario desde el punto de seguimiento inicial $q_{start}$ 
+hasta el punto de seguimiento final $q_{end}$. Cada punto de 
+permanencia $S$ se puede representar como una tupla 
+$\langle t, d, g(s) \rangle$, donde $t$ y $d$ representan la 
+marca de tiempo de inicio y la duración de la permanencia, 
+respectivamente, y $g(s)$ denota la geometría, a menudo 
+representada como el centro de sus puntos de seguimiento. 
+Usamos $S_k$ para denotar el $k$-ésimo punto de permanencia 
+en la trayectoria GNSS de un usuario.\\
+
+
+\textbf{Definición 3 (Ubicación).} Una ubicación $L$ consiste en 
+un conjunto de puntos de permanencia espacialmente próximos. Se 
+puede representar como una tupla $L = \langle l, g(l) \rangle$, 
+donde $l$ es el identificador de la ubicación, 
+y $g(l)$ denota la geometría de la ubicación, calculada como la 
+envolvente convexa de todos los puntos de permanencia contenidos. 
+Por lo tanto, cada ubicación se define como un área. 
+Definimos $\mathcal{O}_i$ como el conjunto que contiene las 
+ubicaciones conocidas para el usuario $u_i$, y 
+$\mathcal{O} = \{\mathcal{O}_1, \dots, \mathcal{O}_{|\mathcal{U}|} \}$ 
+como el conjunto que contiene todas las ubicaciones.\\
+
+
+Mediante la generación de ubicaciones cada punto de permanencia 
+se enriquece, y si añadimos tambi\'en información de contexto que 
+representa un sentimiento del usuario en dicho punto, llam\'emosle a este $f$, se tiene
+$S = \langle t, d, g(s), f, l, g(l) \rangle$; y entonces la movilidad de 
+un usuario se puede representar como una secuencia ordenada en 
+el tiempo de $N$ puntos de permanencia visitados $(S_k)_{k=1}^N$.
+A continuación, definimos el problema de predicción de la 
+siguiente ubicación.\\
+
+\textbf{Problema 1 (Predicción de la Siguiente Ubicación).} 
+Considere una secuencia de puntos de permanencia con información 
+de contexto $(S_k)_{k=m}^n$ visitada por el usuario $u_i$ en una 
+ventana de tiempo desde el paso de tiempo $m$ hasta $n$, el 
+objetivo es predecir la ubicación que el mismo usuario visitará 
+en el siguiente paso de tiempo, es decir, el identificador de 
+ubicación $l_{n+1} \in \mathcal{O}$.\\
+
+La longitud de la ventana temporal determina cuánta información 
+histórica se considera en el modelo predictivo. Aquí, construimos 
+la secuencia histórica basándonos en la movilidad realizada en 
+los últimos \(D \in \{0, 1, \dots, 14\}\) días.
+Por lo tanto, la longitud de la ventana histórica depende del 
+usuario \(u_i\) y del paso de tiempo actual \(n\). 
+La predicción de la siguiente ubicación se define como un 
+problema de predicción de secuencia con longitudes de secuencia 
+variables.
+\newpage
+\section{Metodolog\'ia}
+
+Por sus resultados destacados, proponemos hacer uso de la red neuronal 
+que utiliza información de contexto para 
+abordar la predicción de la siguiente ubicación de \cite{Hong_2023}
+con algunas modificaciones para adaptarla a la problemática. Primero, representamos el contexto 
+como los sentimientos de los usuarios en los puntos de permanencia. 
+Luego, el modelo utiliza varias capas de \textit{embedding}\footnote{\textit{embedding}: 
+técnica de aprendizaje automático que convierte datos de entrada en
+representaciones matem\'aticas permitiendo capturar relaciones
+sem\'anticas y estructurales entre los datos.} para representar los 
+datos heterogéneos de movimiento y contexto. Finalmente, 
+se adapta la red MHSA para aprender las dependencias de la 
+secuencia histórica e inferir la siguiente ubicación visitada. 
+A continuación, se proporciona una descripción 
+detallada de cada mo\'dulo.
+
+\subsection{Representación del contexto como sentimientos}
+
+Para capturar el contexto de los puntos de permanencia utilizamos 
+los sentimientos de los usuarios en estos puntos. Sentimientos que son
+obtenidos a partir de un LLM capaz de inferirlos a partir
+de la ubicación, hora, d\'ia de la semana, as\'i como del punto de inter\'es
+visitado (hospital, restaurante, etc). Si bien, al ser un LLM 
+no entrenado para este prop\'osito
+no es capaz de inferir sentimientos con total precisión
+es suficiente para el prop\'osito de este trabajo.
+
+Los sentimientos utilizados
+son los siguientes: \textit{miedo}, \textit{hambre}, 
+\textit{enfermedad}, \textit{indiferencia}, \textit{cansancio}. Fueron 
+escogidos estos y no otros por la motivaci\'on de establecer puentes futuros 
+entre los resultados de \cite{Hernandez2023},
+y los de este trabajo, en pos de ayudar a la toma de decisiones
+en el \'ambito de la salud p\'ublica.
+
+Una vez inferidos por el modelo del lenguaje, los sentimientos pasan a ser 
+representados como vectores de \textit{embedding} y son utilizados
+para entrenar el modelo de predicción de ubicación, \(e_{f_k}\) representa
+el \textit{embedding} del sentimiento \(f\) en el punto de permanencia \(S_k\).
+
+\subsection{Generación de \textit{embeddings} espacio-temporales}
+
+Un modelo preciso de predicción de ubicación requiere una selección 
+y modelado adecuados de la información de la secuencia histórica. 
+Además del identificador de ubicación sin procesar y la hora de 
+visita correspondiente que se incluyen a menudo (\cite{li2020hierarchical}), 
+consideramos la duración de la actividad y las funciones de uso del 
+suelo $g(s),g(l)$ para describir cada punto de permanencia visitado, lo que 
+garantiza una representación completa de su contexto desde una 
+perspectiva espacio-temporal. Además, la información relacionada 
+con el usuario ayuda a descubrir las secuencias recorridas por 
+diferentes de ellos y ayuda a la red a aprender patrones de 
+movimiento específicos del usuario.
+
+Se utilizan capas de \textit{embedding} para representar características 
+del tipo categórico a un vector de valores reales. A diferencia de la 
+representación \textit{one-hot}\footnote{\textit{one-hot}: Es una codificación que 
+representa variables categóricas como vectores binarios donde cada 
+elemento corresponde a una categoría. Solo el elemento que 
+representa la categoría activa se establece en 1; todos los demás 
+son 0. Una técnica común para manejar datos categóricos en 
+aprendizaje automático.}
+más clásica, los vectores de \textit{embedding} 
+son más compactos y pueden capturar eficazmente la correlación 
+latente entre diferentes tipos de características (\cite{xu2022understanding}). 
+Estas capas son matrices de parámetros que proporcionan mapeos 
+entre la variable original y el vector de \textit{embedding}, optimizadas 
+conjuntamente con toda la red.
+
+Operacionalmente, dado un punto de permanencia \(S_k\) en la 
+secuencia histórica, su identificador de ubicación \(l_k\), 
+la hora de llegada \(t_k\) y la duración de la estancia \(d_k\) 
+se introducen en sus respectivas capas de \textit{embedding} para 
+generar representaciones vectoriales:\\
+
+\(e_{l_k} = h_l(l_k; \mathbf{W}_l)\)
+\(e_{t_k} = h_t(t_k; \mathbf{W}_t)\)
+\(e_{d_k} = h_d(d_k; \mathbf{W}_d)\) (1)\\
+
+donde \(e_{l_k}\), \(e_{t_k}\) y \(e_{d_k}\) son los respectivos 
+vectores de \textit{embedding} para \(l_k\), \(t_k\) y \(d_k\). 
+En el caso de \(h(\cdot; \cdot)\) 
+denota la operación de \textit{embedding} y los términos 
+\(\mathbf{W}\) son las matrices de parámetros optimizadas 
+durante el entrenamiento. Con \textit{embedding} se convierte por separado los minutos, 
+la hora y el día de la semana a partir de la hora de llegada 
+\(t_k\) para capturar diferentes niveles de periodicidad en 
+las visitas históricas.\\
+
+Finalmente, el vector de \textit{embedding} general 
+$e_{all_k}$ para el punto de permanencia $S_k$ se obtiene 
+añadiendo sus características espacio-temporales, as\'i como su contexto
+basado en sentimientos $e_{f_k}$, junto con una codificación posicional 
+$PE$ que codifica la información de secuencia $k$:\\
+
+\(e_{all_k}  = e_{l_k} + e_{t_k} + e_{d_k} + e_{f_k} + PE\) (2)\\
+
+El modelo usa la codificación posicional original propuesta por 
+\cite{vaswani2017attention} que utiliza funciones seno y coseno. 
+La inclusión de la codificación posicional es esencial para 
+entrenar una red de autoatención, ya que no asume implícitamente 
+el orden secuencial de su entrada (\cite{vaswani2017attention}). Además, 
+se representa al usuario $u_i$ del cual se registra la secuencia 
+de puntos de permanencia en un vector $e_{u_i}$ con una 
+capa de \textit{embedding} de usuario, es decir, 
+$e_{u_i} = h_u(u_i; W_u)$. La inclusión de la información 
+del usuario asegura que un modelo entrenado con datos de 
+población aún pueda distinguir las trayectorias recorridas por 
+diferentes usuarios. Como resultado, obtenemos el vector de \textit{embedding} 
+general ${e}_{all_k}$ que codifica las características 
+espacio-temporales y de contexto, y el vector de 
+\textit{embedding} de usuario ${e}_{u_i}$ para la secuencia.
+
+
+\subsection{Red de autoatención multicabezal}
+
+Una vez se adquieren los vectores de características 
+espacio-temporales densos en cada paso de tiempo, debemos extraer 
+sus patrones de transición secuencial. Estos patrones históricos 
+se capturan utilizando una red basada en MHSA, un mecanismo 
+propuesto originalmente dentro de la red transformadora para 
+abordar las tareas de traducción de idiomas (\cite{vaswani2017attention}). 
+Se adopta una arquitectura similar a las redes GPT\footnote{GPT: Generative Pre-trained Transformer} que solo incluye la parte del decodificador 
+del modelo transformador (\cite{radford2018improving}). El decodificador 
+consta de una pila de \(L\) bloques idénticos, cada uno con dos 
+componentes. El primero es la red de autoatención multicabezal enmascarada 
+y el segundo es una red de avance con dos capas lineales, 
+separadas por una función de activación ReLU\footnote{ReLU 
+(Rectified Linear Unit): se define como 
+$f(x) = \max(0, x)$, introduciendo no linealidad y siendo 
+computacionalmente eficiente.}. Son agregadas
+conexiones residuales, normalización de capa y capas de abandono 
+a cada componente para facilitar el aprendizaje. 
+
+La salida del modelo MHSA \(out_n\) se añade al \textit{embedding} del 
+usuario \(e_{u_i}\) y juntas se introducen en un bloque residual 
+completamente conectado (FC\footnote{FC: Fully Connected}). Finalmente, 
+la probabilidad 
+predicha de cada ubicación se obtiene mediante una transformación 
+\textit{softmax}\footnote{\textit{softmax}: Es una función que convierte un vector de valores reales en una distribución de probabilidad.}:\\
+
+\(P(\hat{l}_{n+1}) = \text{Softmax}(f_{FC}(out_n + e_{u_i}; \mathbf{W}_{FC}))\) (3)\\
+
+donde \(f_{FC}(\cdot; \cdot)\) representa la operación del 
+bloque residual FC. Este bloque consta de capas lineales con 
+conexiones residuales, con el objetivo de aprender las dependencias 
+entre la información de la secuencia y el usuario para extraer 
+las preferencias de movilidad personal. 
+\(P(\hat{l}_{n+1}) \in \mathbb{R}^{|\mathcal{O}|}\) contiene la 
+probabilidad de que se visiten todas las ubicaciones en el 
+siguiente paso de tiempo.
+
+Durante el entrenamiento, con acceso a la siguiente ubicación 
+real \(l_{n+1}\), la tarea puede considerarse como un problema de 
+clasificación multiclase. Por lo tanto, los parámetros del modelo 
+se pueden optimizar utilizando la pérdida de entropía cruzada 
+multiclase \(\mathcal{L}\):\\
+
+\(\mathcal{L} = -\sum_{k=1}^{|\mathcal{O}|} P(l_{n+1})(k) \log(P(\hat{l}_{n+1})(k))\) (4)\\
+
+donde \(P(\hat{l}_{n+1})(k)\) representa la probabilidad predicha 
+de visitar la \(k\)-ésima ubicación y \(P(l_{n+1})(k)\) es la verdad 
+representada por \textit{one-hot}, es decir, 
+\(P(l_{n+1})(k) = 1\) si la siguiente ubicación real es la 
+\(k\)-ésima ubicación, y \(P(l_{n+1})(k) = 0\) en caso contrario.
