@@ -2,158 +2,114 @@
 \chapter*{Introducción}\label{chapter:introduction}
 \addcontentsline{toc}{chapter}{Introducción}
 
-Las enfermedades transmitidas por vectores son una de 
-las grandes problemáticas de salud pública en el mundo.
-Según la Organización Mundial de la Salud (OMS),
-estas representan más del 17\% de las enfermedades infecciosas
-y provocan más de 700,000 desfunciones anuales (\cite{who_website2024}),
-lo que supone un gran impacto en la salud y el bienestar
-de las poblaciones afectadas .
-\par
-Estas enfermedades son causadas por parásitos,
-bacterias o virus que son transmitidos por insectos,
-garrapatas o ácaros, y pueden causar una amplia variedad
-de síntomas, desde leves hasta graves y potencialmente
-mortales. As\'i como en el impacto directo en la salud de
-las personas, estas enfermedades también tienen un
-impacto económico significativo en los países afectados,
-ya que pueden dañar la productividad laboral,
-el turismo y otros sectores económicos.
-\par
-En este contexto, la prevención y el control de las
-enfermedades transmitidas por vectores son esenciales
-para proteger la salud pública y reducir su impacto
-en la sociedad. Esto implica una amplia gama de
-estrategias, desde la educación y la concientización
-de la población sobre las medidas de prevención,
-hasta la implementación de programas de control
-de vectores y la investigación y desarrollo de nuevos
-medicamentos y vacunas.
-\par
-La din\'amica de estas enferemedades es compleja y
-multifactorial, a\'un m\'as cuando es transmitida r\'apidamente en el tiempo, por lo que
-para ser analizada se requiere de un enfoque interdisciplinario que
-combine conocimientos de epidemiología,
-biología, matemáticas, computaci\'on y otras disciplinas.
-En este sentido, los modelos matemáticos y computacionales 
-pueden ser una herramienta valiosa para entender mejor
-el comportamiento de estas enfermedades y predecir su
-evolución.
+El rápido proceso de urbanización ha incrementado los viajes 
+individuales, presentando desafíos para la sostenibilidad de las 
+ciudades. Para alcanzar los objetivos de desarrollo de las 
+Naciones Unidas (\cite{Griggs2013}), los cambios en el comportamiento de 
+la movilidad y los nuevos conceptos para promover estos, 
+desempeñarán un papel fundamental
+ (\cite{Martin2021}). En la salud p\'ublica, la pandemia de la COVID-19 es otra prueba
+de la necesidad de conocer esto a fondo, puesto
+que la movilidad es un factor determinante en la propagación
+de enfermedades infecciosas  (\cite{Kraemer2020}). Definiciones recientes como
+Movilidad como
+Servicio (MaaS) (\cite{Reck2022}), carga inteligente (\cite{Xu2018}) y 
+\textit{ride-sharing} (\cite{Huang2019}), dependen de la capacidad de ofrecer 
+servicios personalizados adaptados al contexto del viaje y las 
+características individuales (\cite{Ma2022}).
+La movilidad individual, es decir, predecir cuándo y dónde ocurrirá 
+un viaje, es esencial para el desarrollo de estos conceptos y, 
+por lo tanto, una herramienta clave para el transporte sostenible.
 
-%\section{Motivaci\'on}
-
-\section{Motivaci\'on}
-
-La aparición de una epidemia de este tipo de enfermedades
-presenta desafíos complejos que demandan una respuesta 
-inmediata y coordinada.  Desde la devastadora 
-pérdida de vidas humanas hasta las profundas 
-consecuencias económicas y sociales, la necesidad de 
-herramientas eficaces para la gestión de estas 
-situaciones es innegable.
-
-El colapso de los sistemas de salud debido a la rápida 
-propagación de enfermedades, a menudo exacerbado 
-por una capacidad limitada de respuesta, subraya 
-la importancia de la preparación y la prevención.  
-La escasez de recursos, la sobrecarga del personal 
-médico y la dificultad para brindar atención 
-adecuada a todos los necesitados son consecuencias 
-directas de una respuesta inadecuada ante una 
-epidemia.
-
-As\'i como las las epidemias imponen una carga 
-económica significativa, las medidas de control, 
-como cuarentenas y restricciones de viaje, junto 
-con el aumento de los gastos médicos, pueden 
-desencadenar crisis económicas.  La disminución de 
-la productividad, la interrupción del turismo y 
-las pérdidas en diversos sectores económicos son 
-elementos que agravan aún más la situación.
-
-Ante estos desafíos, el desarrollo de una herramienta 
-computacional de simulación epidémica se presenta 
-como una solución crucial. Esta herramienta permitiría 
-modelar la dinámica de este tipo de enfermedades, 
-proporcionando información vital para la toma de 
-decisiones, fortaleciendo as\'i la capacidad de 
-respuesta ante futuras 
-epidemias, mitigando su impacto y protegiendo la 
-salud pública.
-
-%\section{Antecedentes}
-
+\section{Motivación}
+La predicción de la siguiente ubicación de un individuo, a partir 
+de su información histórica de movilidad, es un problema que ha cobrado 
+gran relevancia en la última década. El auge de los modelos de 
+aprendizaje profundo (\cite{luca2021survey}) ha impulsado el interés de 
+los investigadores en abordar este problema con métodos basados 
+en el aprendizaje.  Al formularse como un problema de predicción 
+de secuencias, similar a tareas en procesamiento del lenguaje 
+natural y de audio, se aplican modelos exitosos en estos campos.  
+En particular, el modelo Transformer (\cite{vaswani2017attention}), con su mecanismo 
+de autoatención multicabezal, ha revolucionado el modelado de 
+secuencias.
+\newpage
 \section{Antecedentes}
-La experiencia del Grupo de Biomatemática de la 
-Facultad de Matemática y Computación en el trabajo 
-con modelos epidemiológicos poblacionales, incluyendo 
-la estimación y ajuste de sus parámetros, respalda 
-la necesidad de herramientas computacionales que 
-aborden los desafíos inherentes a la modelación, 
-solución, estimación y predicción en epidemiología. 
-En este contexto, se destaca la tesis de licenciatura 
-``Redes Complejas en Epidemiología. Aplicaciones a 
-modelos de VIH y Dengue'' de Glenda Beatriz Rodríguez 
-García (2016), as\'i como ``Simulación computacional para la
-dinámica de enfermedades transmitidas
-por vectores'' de Ernesto Alfonso Hern\'andez (2024), ambos bajo
-la tutor\'ia de la Dra. Aymée Marrero Severo. Estas investigaciones 
-introducen conceptos 
-de la teoría de redes complejas y analizan su 
-aplicación en la modelación de epidemias como el  
-dengue. Estos trabajos previos han demostrado la 
-eficacia del uso de redes complejas en la comprensión 
-y predicción de la dinámica de epidemias,
-sirviendo como justificación para el 
-desarrollo de la herramienta computacional propuesta.
 
-%Problema de Investigaci\'on
-\section{Problema de Investigaci\'on}
-Para comprender y modelar la dinámica de transmisión 
-de enfermedades por vectores, la simulación 
-computacional se presenta como una herramienta 
-fundamental. Permite explorar diversos escenarios 
-y estrategias de control, con el objetivo de 
-prevenir y mitigar la propagación de enfermedades 
-(\cite{ferguson2006strategies}). Diversos modelos contribuyen 
-al estudio de esta dinámica, desde el clásico modelo 
-SIR (\cite{kermack1927contribution}), que clasifica a la 
-población en susceptibles, infectados y recuperados, 
-hasta modelos basados en agentes, que simulan el 
-comportamiento individual, y modelos de redes, que 
-representan las interacciones entre vectores, 
-huéspedes y entorno (\cite{ferguson2006strategies}; \cite{balcan2009multiscale}). Cada método ofrece diferentes 
-recursos para el proceso de simulación. En este 
-contexto, la presente investigación se centra 
-en la modelación de una simulación para la 
-dinámica de enfermedades transmitidas por 
-vectores, con énfasis en la incorporación de 
-elementos que simulen la toma de decisiones 
-humanas.
+Los modelos Transformer se están utilizando en la predicción de la 
+movilidad individual por su capacidad para abordar desafíos 
+específicos: 
 
-%Pregunta Cient\'ifica
-\section{Pregunta Cient\'ifica}
-¿Es posible implementar una herramienta de simulación, la cual modele
-la propagación de una enfermedad transmitida por vectores teniendo en cuenta el
-comportamiento dinámico de las personas?
+(1) Capturar las múltiples periodicidades en los 
+patrones de visitas a ubicaciones, las cuales varían entre 
+individuos (\cite{feng2018deepmove}). 
 
-%Objetivos
+(2) Modelar la dependencia a largo plazo del 
+comportamiento de movilidad, considerando que la movilidad actual 
+se ve influenciada por comportamientos previos (\cite{Cherchi2017,Sun2013}).
+
+\section{Problema de Investigación}
+
+La movilidad humana presenta características únicas, como 
+dependencias espacio-temporales complejas (\cite{feng2018deepmove,li2020hierarchical}) y la 
+estocasticidad de las visitas a ubicaciones (\cite{Song2010}), que 
+dificultan la aplicación directa de modelos de aprendizaje de 
+secuencias. Predecir la siguiente ubicación a partir del 
+historial de visitas es un desafío. Un modelo preciso debe 
+considerar el contexto que influye en la elección de ubicaciones.  
+Estudios de comportamiento de viaje sugieren que la selección de 
+ubicaciones se correlaciona con aspectos como la disponibilidad 
+de modos de transporte (\cite{Hong_2022}) y el día de la semana (\cite{Dharmowijoyo2016}). 
+¿Pero qu\'e otros factores influir\'ian en esto? ¿Ser\'ia posible
+que los sentimientos o estados de un individuo afecten la elección
+de su siguiente ubicación? Por ejemplo, si un individuo
+está de mal humor, puede ser que vaya a un lugar
+de entretenimiento, como un cine o un bar; mientras que si
+se encuentra en un estado de enfermedad es probable que
+vaya a un hospital o a una farmacia. De aqu\'i surge la
+problem\'atica de estudio:\\
+
+Predicci\'on de la siguiente ubicación de un individuo utilizando contexto
+basado en los sentimientos o estados de este.
+
+\section{Pregunta Científica}
+
+¿Cómo influyen los sentimientos o estados de un indivudo en 
+la predicción de su siguiente 
+ubicación, y cómo se puede integrar esta 
+información en un modelo computacional para mejorar la 
+precisión de la predicción?
+
 \section{Objetivos}
-\subsection{Objetivos General}
-Desarrollar un modelo de aprendizaje autom\'atico capaz de generar redes complejas para la simulación de la propagación de una enfermedad transmitida por vectores teniendo en cuenta el comportamiento dinámico de las personas.
+\subsection{Objetivo General}
 
-\subsection{Objetivos Espec\'ificos}
+Desarrollar un modelo de aprendizaje profundo para la predicción de la siguiente ubicación que 
+incorpore la información de sentimiento o estado del individuo, 
+incluyendo el historial de ubicaciones, y datos 
+temporales.
+
+\subsection{Objetivos Específicos}
+
 \begin{itemize}
-    \item Implementar un modelo de aprendizaje autom\'atico para la generación de redes complejas.
-    \item Implementar un modelo de simulación para la propagación de una enfermedad transmitida por vectores.
-    \item Implementar un modelo de comportamiento dinámico de las personas.  
+    \item Representar el sentimiento a partir de la información 
+    que se tiene del conjunto de datos.
+    \item Diseñar un modelo de redes neuronales basado en Transformer que utilice 
+    información de ubicación, el sentimiento o estado, y tiempo, para predecir 
+    la siguiente ubicación.
+    \item Evaluar la mejora en el rendimiento de la predicción al 
+    utilizar el contexto del sentimiento.
 \end{itemize}
 
 %Estructura
 \section{Estructura}
-La estructura del documento est\'a dada por tres capítulos. En el Capítulo 1 se
-realiza un estudio sobre el marco teórico conceptual del problema. El Capítulo 2 aborda tanto la modelación como la metodolog\'ia utilizada. 
+La estructura del documento est\'a dada por tres capítulos. En el 
+Capítulo 1 se
+realiza un estudio sobre el marco teórico conceptual del problema. 
+El Capítulo 2 aborda tanto la modelación como la metodolog\'ia utilizada. 
 En el Capítulo 3
-se discuten sobre la implementación del modelo, as\'i como de su evaluaci\'on mediante la experimentaci\'on. Terminado este \'ultimo cap\'itulo
-se da paso a las Conclusiones, la cual resume los puntos principales,
-dando respuesta a los objetivos según los resultados obtenidos.
+se discuten sobre la implementación del modelo, as\'i como de su 
+evaluaci\'on mediante la experimentaci\'on. Terminado este \'ultimo 
+cap\'itulo
+se da paso a las Conclusiones, la cual resume los aspectos 
+principales,
+dando respuesta a los objetivos según los resultados.
