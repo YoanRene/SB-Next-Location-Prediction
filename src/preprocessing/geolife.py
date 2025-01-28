@@ -18,63 +18,54 @@ import trackintel as ti
 # from config import config
 from utils import calculate_user_quality, enrich_time_info, split_dataset, get_valid_sequence
 
+
 def get_dataset(config, epsilon=50, num_samples=2):
     """Construct the raw staypoint with location id dataset from geolife data."""
     # read file storage
-    if not os.path.exists(os.path.join(".", "data", f"staypoints_geolife.csv")):
-        print("No cache file found, start processing...")    
-        pfs, _ = read_geolife(config["raw_geolife"], print_progress=True)
-        # generate staypoints
-        pfs, sp = pfs.as_positionfixes.generate_staypoints(
-            gap_threshold=24 * 60, include_last=True, print_progress=True, dist_threshold=200, time_threshold=30, n_jobs=-1
-        )
-        # create activity flag
-        sp = sp.as_staypoints.create_activity_flag(method="time_threshold", time_threshold=25)
+    pfs, _ = read_geolife(config["raw_geolife"], print_progress=True)
+    # generate staypoints
+    pfs, sp = pfs.as_positionfixes.generate_staypoints(
+        gap_threshold=24 * 60, include_last=True, print_progress=True, dist_threshold=200, time_threshold=30, n_jobs=-1
+    )
+    # create activity flag
+    sp = sp.as_staypoints.create_activity_flag(method="time_threshold", time_threshold=25)
 
-        ## select valid user, generate the file if user quality file is not generated
-        quality_path = os.path.join(".", "data", "quality")
-        quality_file = os.path.join(quality_path, "geolife_slide_filtered.csv")
-        if Path(quality_file).is_file():
-            valid_user = pd.read_csv(quality_file)["user_id"].values
-        else:
-            if not os.path.exists(quality_path):
-                os.makedirs(quality_path)
-            # generate triplegs
-            pfs, tpls = pfs.as_positionfixes.generate_triplegs(sp)
-            # the trackintel trip generation
-            sp, tpls, trips = generate_trips(sp, tpls, add_geometry=False)
+    ## select valid user, generate the file if user quality file is not generated
+    quality_path = os.path.join(".", "data", "quality")
+    quality_file = os.path.join(quality_path, "geolife_slide_filtered.csv")
+    if Path(quality_file).is_file():
+        valid_user = pd.read_csv(quality_file)["user_id"].values
+    else:
+        if not os.path.exists(quality_path):
+            os.makedirs(quality_path)
+        # generate triplegs
+        pfs, tpls = pfs.as_positionfixes.generate_triplegs(sp)
+        # the trackintel trip generation
+        sp, tpls, trips = generate_trips(sp, tpls, add_geometry=False)
 
-            quality_filter = {"day_filter": 50, "window_size": 10}
-            valid_user = calculate_user_quality(sp.copy(), trips.copy(), quality_file, quality_filter)
+        quality_filter = {"day_filter": 50, "window_size": 10}
+        valid_user = calculate_user_quality(sp.copy(), trips.copy(), quality_file, quality_filter)
 
-        sp = sp.loc[sp["user_id"].isin(valid_user)]
+    sp = sp.loc[sp["user_id"].isin(valid_user)]
 
-        # filter activity staypoints
-        sp = sp.loc[sp["is_activity"] == True]
+    # filter activity staypoints
+    sp = sp.loc[sp["is_activity"] == True]
 
-        # generate locations
-        sp, locs = sp.as_staypoints.generate_locations(
-            epsilon=epsilon, num_samples=num_samples, distance_metric="haversine", agg_level="dataset", n_jobs=-1
-        )
-        # filter noise staypoints
-        sp = sp.loc[~sp["location_id"].isna()].copy()
-        print("After filter non-location staypoints: ", sp.shape[0])
+    # generate locations
+    sp, locs = sp.as_staypoints.generate_locations(
+        epsilon=epsilon, num_samples=num_samples, distance_metric="haversine", agg_level="dataset", n_jobs=-1
+    )
+    # filter noise staypoints
+    sp = sp.loc[~sp["location_id"].isna()].copy()
+    print("After filter non-location staypoints: ", sp.shape[0])
 
-        # save locations
-        locs = locs[~locs.index.duplicated(keep="first")]
-        filtered_locs = locs.loc[locs.index.isin(sp["location_id"].unique())]
-        filtered_locs.as_locations.to_csv(os.path.join(".", "data", f"locations_geolife.csv"))
-        print("Location size: ", sp["location_id"].unique().shape[0], filtered_locs.shape[0])
-        sp = sp[["user_id", "started_at", "finished_at", "geom", "location_id"]]
-        #save cache sp
-        sp.to_csv(os.path.join(".", "data", f"staypoints_geolife.csv"))
+    # save locations
+    locs = locs[~locs.index.duplicated(keep="first")]
+    filtered_locs = locs.loc[locs.index.isin(sp["location_id"].unique())]
+    filtered_locs.as_locations.to_csv(os.path.join(".", "data", f"locations_geolife.csv"))
+    print("Location size: ", sp["location_id"].unique().shape[0], filtered_locs.shape[0])
 
-    sp = pd.read_csv(os.path.join(".", "data", f"staypoints_geolife.csv"))
-    print(sp.head())
-    print(sp.shape)
-
-    locs = pd.read_csv(os.path.join(".", "data", f"locations_geolife.csv"))
-
+    sp = sp[["user_id", "started_at", "finished_at", "geom", "location_id"]]
     # merge staypoints
     sp_merged = sp.as_staypoints.merge_staypoints(
         triplegs=pd.DataFrame([]), max_time_gap="1min", agg={"location_id": "first"}
