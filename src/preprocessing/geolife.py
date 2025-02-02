@@ -17,6 +17,7 @@ import trackintel as ti
 
 # from config import config
 from utils import calculate_user_quality, enrich_time_info, split_dataset, get_valid_sequence
+from sentiment_analysis import get_addresses_geolife,get_sentiments_geolife
 
 
 def get_dataset(config, epsilon=50, num_samples=2):
@@ -164,3 +165,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     get_dataset(config=CONFIG, epsilon=args.epsilon)
+ #   get_addresses_geolife()
+  #  get_sentiments_geolife()

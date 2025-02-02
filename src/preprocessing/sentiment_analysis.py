@@ -73,8 +73,6 @@ def get_address_from_coords(latitude, longitude, api_key):
         return f"API request failed: {e}"
 
 def generate_sentiment_output(index,df_new,sep,path_dataset_input_llm,path_dataset_output_llm,model,context_prompt,cond,sentiments):
-    if index<=12000:
-        return pd.DataFrame(columns=['index','id','start_day', 'end_day','start_time', 'end_time', 'location'])
     if(cond(index,sep)):
         df_new.to_csv(f'{path_dataset_input_llm}\\dataSet_input_llm_geolife_{index}.csv', index=False)
         df_new = pd.DataFrame(columns=['index','id','start_day', 'end_day','start_time', 'end_time', 'location'])
@@ -117,8 +115,6 @@ def generate_sentiment_output(index,df_new,sep,path_dataset_input_llm,path_datas
                 if cond_c:
                     print("The sentiments are not the same as the expected ones.")
                     continue
-
-                df2['id']=df1['id'].values
 
                 flag=False
                 
@@ -190,9 +186,9 @@ def get_sentiments_geolife():
         df_new.at[index, 'location'] = df_loc_addresses[row['location_id']==df_loc_addresses["location_id"]].values[0][1]
         
         
-        df_new=generate_sentiment_output(index,df_new,sep,path_dataset_input_llm,path_dataset_output_llm,model,context_prompt,lambda index,sep: index!=0 and index%sep==0,sentiments)
+        #df_new=generate_sentiment_output(index,df_new,sep,path_dataset_input_llm,path_dataset_output_llm,model,context_prompt,lambda index,sep: index!=0 and index%sep==0,sentiments)
 
-    df_new=generate_sentiment_output(df.shape[0]-1,df_new,sep,path_dataset_input_llm,path_dataset_output_llm,model,context_prompt,lambda index,sep: index%sep!=0,sentiments)
+#    df_new=generate_sentiment_output(df.shape[0]-1,df_new,sep,path_dataset_input_llm,path_dataset_output_llm,model,context_prompt,lambda index,sep: index%sep!=0,sentiments)
 
 
     #merge all output dataset
@@ -203,9 +199,15 @@ def get_sentiments_geolife():
     df_combined = df_combined.sort_values(by="index")
     df_combined.to_csv(f'{path_dataset_output_llm}\\dataSet_output_llm_geolife.csv', index=False)
 
-    #df_final = df.copy()
-    #df_final = df_final.merge(df_combined, on='location_id', how='left')
-    #df_final.to_csv(f'data\\dataSet_sentiment_geolife.csv', index=False)
+    sentiments_list=sentiments.split(', ')
+    sentiment_dict = {s: i for i, s in enumerate(sentiments_list)}
+
+    df['sentiment'] = df_combined['sentiment'].apply(lambda r: sentiment_dict.get(r, -1))
+
+    df.to_csv(f'data\\dataSet_geolife_sentiments.csv', index=False)
+    
+
+    
 
         
 #get_addresses_geolife()
