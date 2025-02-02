@@ -73,9 +73,11 @@ def get_address_from_coords(latitude, longitude, api_key):
         return f"API request failed: {e}"
 
 def generate_sentiment_output(index,df_new,sep,path_dataset_input_llm,path_dataset_output_llm,model,context_prompt,cond,sentiments):
+    if index<=12000:
+        return pd.DataFrame(columns=['index','id','start_day', 'end_day','start_time', 'end_time', 'location'])
     if(cond(index,sep)):
         df_new.to_csv(f'{path_dataset_input_llm}\\dataSet_input_llm_geolife_{index}.csv', index=False)
-        df_new = pd.DataFrame(columns=['id','start_day', 'end_day','start_time', 'end_time', 'location'])
+        df_new = pd.DataFrame(columns=['index','id','start_day', 'end_day','start_time', 'end_time', 'location'])
         uploaded_files = genai.upload_file(f'{path_dataset_input_llm}\\dataSet_input_llm_geolife_{index}.csv')
         
         flag=True
@@ -100,33 +102,23 @@ def generate_sentiment_output(index,df_new,sep,path_dataset_input_llm,path_datas
 
                 sentiments_set=set(sentiments.split(', '))
 
-                cond_a= list(df1['id']) != list(df2['id'])
-                cond_b= list(df2.columns)!=['id','sentiment','explanation']
+                cond_a= list(df1['index'])!=list(df2['index'])
+                cond_b= list(df2.columns)!=['index','sentiment','explanation']
                 cond_c = not df2['sentiment'].isin(sentiments_set).all() 
 
                 if cond_a:
-                    if len(context)>=4:
-                        continue
-                    uploaded_files = genai.upload_file(f'{path_dataset_output_llm}\\dataSet_output_llm_geolife_{index}.csv')
-                    context.append(uploaded_files)
-                    context.append("The ids of the two datasets are not the same. Please correct this.")
+                    print("The indexes of the output dataset are not the same as the input ones.")
                     continue
                 
                 if cond_b:
-                    if len(context)>=4:
-                        continue
-                    uploaded_files = genai.upload_file(f'{path_dataset_output_llm}\\dataSet_output_llm_geolife_{index}.csv')
-                    context.append(uploaded_files)
-                    context.append("The columns of the output dataset are not the same as the expected ones. Please correct this.")
+                    print("The columns of the output dataset are not the same as the expected ones.")
                     continue
 
                 if cond_c:
-                    if len(context)>=4:
-                        continue
-                    uploaded_files = genai.upload_file(f'{path_dataset_output_llm}\\dataSet_output_llm_geolife_{index}.csv')
-                    context.append(uploaded_files)
-                    context.append("The sentiments are not the same as the expected ones. Please correct this.")
+                    print("The sentiments are not the same as the expected ones.")
                     continue
+
+                df2['id']=df1['id'].values
 
                 flag=False
                 
@@ -141,7 +133,7 @@ def get_sentiments_geolife():
     df = pd.read_csv('data\\dataSet_geolife.csv')
 
     genai.configure(api_key="AIzaSyDwkh89PbxBWrs2pq5Zad569-dYVDi0P0o")
-    model = genai.GenerativeModel("gemini-2.0-flash-thinking-exp-01-21")
+    model = genai.GenerativeModel("gemini-2.0-flash-thinking-exp")
 
     sentiments="fear, hunger, illness, indifference, tiredness"
     default_sentiment= 'indifference'
@@ -154,18 +146,16 @@ def get_sentiments_geolife():
             You will have to return the sentiment that is most prominent in the situational context. 
             If you are unable to identify the sentiment, 
             you will have to return '{default_sentiment}'. You will have to return only the sentiment and a brief explanation of why you chose that sentiment. 
-            The Output should be in a structured CSV with columns: id, sentiment, explanation. Provide only CSV-formatted output. 
-            The id is the same of the input id. The sentiment must be in lowercase.
+            The Output should be in a structured CSV with columns: index, sentiment, explanation. Provide only CSV-formatted output. 
+            The index of the output must be the same of the input. The sentiment must be in lowercase. 
             The explanation should be between double quotes and can't have chinese characters.
             You must provide output for all rows in the input. 
             
             Example:
-                Input: 968,Friday,Friday,10:35 AM,12:32 PM,"KFC, Chengfu Road, Wudaokou, Dongsheng, Haidian District, Beijing, 100190, China"
-                Output: 968,hunger,"Being at KFC during late morning/noon suggests hunger for lunch."
+                Input: 17,968,Friday,Friday,10:35 AM,12:32 PM,"KFC, Chengfu Road, Wudaokou, Dongsheng, Haidian District, Beijing, 100190, China"
+                Output: 17,hunger,"Being at KFC during late morning/noon suggests hunger for lunch."
 
-            Please ensure that the ids of the input and output datasets match
-            Please ensure that the output dataset has the following columns: id, sentiment, explanation.
-            Please ensure that the sentiment is one of the following: {sentiments}.
+                
             """
 
     #if folder does not exist, create it
@@ -178,7 +168,7 @@ def get_sentiments_geolife():
         os.makedirs(path_dataset_output_llm)
     
     #generation_config = {"temperature": 0.3}
-    df_new = pd.DataFrame(columns=['id','start_day', 'end_day','start_time', 'end_time', 'location'])
+    df_new = pd.DataFrame(columns=['index','id','start_day', 'end_day','start_time', 'end_time', 'location'])
     
     sep=1000 #size of the input for llm 
 
@@ -191,7 +181,7 @@ def get_sentiments_geolife():
         start_day = weekdays[(row['weekday'])%7]
         end_day = weekdays[(row['weekday']+(row['end_day']-row['start_day']))%7]
         
-        
+        df_new.at[index, 'index'] = index
         df_new.at[index, 'id'] = int(row['id'])
         df_new.at[index, 'start_time'] = formatted_start_time
         df_new.at[index, 'end_time'] = formatted_end_time
@@ -210,7 +200,7 @@ def get_sentiments_geolife():
     csv_files = glob.glob(f"{path_dataset_output_llm}\\*.csv")
 
     df_combined = pd.concat([pd.read_csv(f) for f in csv_files if f!=f'{path_dataset_output_llm}\\dataSet_output_llm_geolife.csv'],ignore_index=True)
-    df_combined = df_combined.sort_values(by="id")
+    df_combined = df_combined.sort_values(by="index")
     df_combined.to_csv(f'{path_dataset_output_llm}\\dataSet_output_llm_geolife.csv', index=False)
 
     #df_final = df.copy()
