@@ -2,6 +2,7 @@ misc:
   dataset: geolife
   total_loc_num: 1187
   total_user_num: 46
+  total_sentiment_num: 5
 
 
   # 
@@ -9,6 +10,7 @@ misc:
   if_embed_poi: False
   if_embed_time: True
   if_embed_duration: True
+  if_embed_sentiment: True
   
   
   # how many days in the past we consider

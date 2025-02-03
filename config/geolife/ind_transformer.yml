@@ -7,9 +7,10 @@ misc:
   if_embed_poi: False
   if_embed_time: True
   if_embed_duration: False
-
+  if_embed_sentiment: False
 
   total_user_num: 46
+  total_sentiment_num: 5
 
   # how many days in the past we consider
   previous_day: 7

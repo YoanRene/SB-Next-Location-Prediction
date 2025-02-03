@@ -27,6 +27,7 @@ class sp_loc_dataset(torch.utils.data.Dataset):
         previous_day=7,
         model_type="transformer",
         day_selection="default",
+        is_geolife_sentiments=False
     ):
         self.root = source_root
         self.user = user
@@ -35,6 +36,7 @@ class sp_loc_dataset(torch.utils.data.Dataset):
         self.model_type = model_type
         self.dataset = dataset
         self.day_selection = day_selection
+        self.is_geolife_sentiments = is_geolife_sentiments
 
         # check whether to train individual models
         if user is None:
@@ -103,6 +105,9 @@ class sp_loc_dataset(torch.utils.data.Dataset):
             # [sequence_len * buffer_num]
             return_dict["poi"] = torch.tensor(np.array(selected["poi_X"]), dtype=torch.float32)
 
+        if self.is_geolife_sentiments:
+            return_dict["sentiment"] = torch.tensor(selected["sentiment_X"])
+
         return x, y, return_dict
 
     def generate_data(self):
@@ -114,7 +119,10 @@ class sp_loc_dataset(torch.utils.data.Dataset):
         self.valid_ids = load_pk_file(os.path.join(self.root, f"valid_ids_{self.dataset}.pk"))
 
         # the location data
-        ori_data = pd.read_csv(os.path.join(self.root, f"dataset_{self.dataset}.csv"))
+        if self.is_geolife_sentiments:
+            ori_data = pd.read_csv(os.path.join(self.root, f"dataset_{self.dataset}_sentiments.csv"))
+        else:
+            ori_data = pd.read_csv(os.path.join(self.root, f"dataset_{self.dataset}.csv"))
 
         ori_data.sort_values(by=["user_id", "start_day", "start_min"], inplace=True)
 
@@ -297,6 +305,9 @@ class sp_loc_dataset(torch.utils.data.Dataset):
             data_dict["start_min_X"] = hist["start_min"].values
             data_dict["dur_X"] = hist["duration"].values
             data_dict["diff"] = (row["diff_day"] - hist["diff_day"]).astype(int).values
+
+            if self.is_geolife_sentiments:
+                data_dict["sentiment_X"] = hist["sentiment"].values
 
             if self.dataset == "gc":
                 data_dict["poi_X"] = self._getPOIRepresentation(data_dict["X"])

@@ -111,6 +111,7 @@ def get_dataloaders(config):
         previous_day=config.previous_day,
         dataset=config.dataset,
         day_selection=config.day_selection,
+        is_geolife_sentiments=config.if_embed_sentiment
     )
     dataset_val = sp_loc_dataset(
         config.source_root,
@@ -119,6 +120,7 @@ def get_dataloaders(config):
         previous_day=config.previous_day,
         dataset=config.dataset,
         day_selection=config.day_selection,
+        is_geolife_sentiments=config.if_embed_sentiment
     )
     dataset_test = sp_loc_dataset(
         config.source_root,
@@ -127,6 +129,7 @@ def get_dataloaders(config):
         previous_day=config.previous_day,
         dataset=config.dataset,
         day_selection=config.day_selection,
+        is_geolife_sentiments=config.if_embed_sentiment
     )
 
     fn = collate_fn

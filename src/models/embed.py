@@ -138,6 +138,11 @@ class AllEmbedding(nn.Module):
         if self.if_include_poi:
             self.poi_net = POINet(config.poi_original_size, d_input)
 
+        #sentiment
+        self.if_include_sentiment = config.if_embed_sentiment
+        if self.if_include_sentiment:
+            self.sentiment_net = nn.Embedding(config.total_sentiment_num, d_input)
+
         # position encoder for transformer
         self.if_pos_encoder = if_pos_encoder
         if self.if_pos_encoder:
@@ -159,6 +164,9 @@ class AllEmbedding(nn.Module):
 
         if self.if_include_poi:
             emb = emb + self.poi_net(context_dict["poi"])
+
+        if self.if_include_sentiment:
+            emb = emb + self.sentiment_net(context_dict["sentiment"])
 
         if self.if_pos_encoder:
             return self.pos_encoder(emb * math.sqrt(self.d_input))
