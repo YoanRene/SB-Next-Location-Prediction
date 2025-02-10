@@ -1,0 +1,13 @@
+python=3.9.12
+pytorch
+tqdm
+easydict
+yaml
+pyyaml
+transformers
+cudatoolkit
+trackintel
+gensim
+google-generativeai
+requests 
+shapely
