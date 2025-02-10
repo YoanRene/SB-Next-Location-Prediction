@@ -8,7 +8,7 @@ un conjunto de datos de seguimiento GNSS.
 El presente es un conjunto de datos p\'ublico de trayectorias GPS recopilado en el 
 proyecto GeoLife de Microsoft Research Asia por 182 usuarios durante 
 un período de más de tres años (desde abril de 2007 hasta agosto de 2012) (\cite{zheng2011geolife}). 
-En este conjunto se registra una amplia gama de movimientos al aire libre 
+El conjunto registra una amplia gama de movimientos al aire libre 
 de los usuarios, que incluyen no solo rutinas diarias como ir a casa o 
 al trabajo, sino también algunas actividades de entretenimiento y deportivas, 
 como compras, turismo, cenas, senderismo y ciclismo. 
@@ -17,20 +17,20 @@ Una trayectoria GPS de este conjunto de datos está representada por una
 secuencia de puntos con marca de tiempo, cada uno de los cuales contiene 
 información de latitud, longitud y altitud. Esta serie de datos 
 contiene 17,621 trayectorias con una distancia total de aproximadamente 
-1.2 millones de kilómetros y una duración total de más de 48,000 horas. 
-Estas trayectorias fueron registradas por diferentes dispositivos GPS y 
-teléfonos con GPS, y tienen una variedad de tasas de muestreo. 
+1.2 millones de kilómetros y una duración de más de 48,000 horas. 
+Las trayectorias fueron registradas por diferentes dispositivos con
+tecnolog\'ia GPS, como tel\'efonos m\'oviles, y tienen una variedad de tasas de muestreo. 
 El 91 por ciento de las trayectorias se registraron en una representación 
 densa, por ejemplo, cada 1-5 segundos o cada 5-10 metros por punto.
 
-Se sigue el marco propuesto 
-por \cite{Zheng2010GeoLife} y se clasifica las trayectorias GPS en puntos 
+La investigación emplea el marco propuesto 
+por \cite{Zheng2010GeoLife} y se clasifican las trayectorias GPS en puntos 
 de permanencia y etapas de movimiento utilizando la biblioteca 
 Trackintel (\cite{martin2023trackintel}).\\
 
 Las trazas de movimiento de los estudios de seguimiento GNSS se 
 preprocesan para la predicci\'on de la siguiente ubicaci\'on. 
-Pre-filtramos los conjuntos de datos para considerar solo a los 
+En este sentido fueron pre-filtrados los conjuntos de datos para considerar solo a los 
 usuarios observados por m\'as de 50 d\'ias 
 en Geolife, garantizando un tiempo de observaci\'on prolongado. 
 Se utiliza la cobertura temporal de seguimiento, que 
@@ -40,7 +40,7 @@ seguimiento en la dimensi\'on temporal. Despu\'es de este proceso,
 permanecen 45 usuarios en Geolife.
 
 Las ubicaciones se generan a partir de la secuencia individual 
-de puntos de permanencia visitados. Consideramos un punto de permanencia como 
+de puntos de permanencia visitados. El estudio considera un punto de permanencia como 
 una actividad si su duraci\'on es superior a 25 minutos. Luego, los 
 puntos de permanencia de actividad se agrupan espacialmente en ubicaciones 
 para considerar visitas al mismo lugar en diferentes momentos. Se utiliza 
@@ -67,8 +67,8 @@ muestra estad\'isticas b\'asicas para el conjunto de datos.\\
 \end{table}
 
 \subsection{Generaci\'on de los sentimientos}
-Para la generación de sentimientos, se utilizó el modelo de Google \textit{Gemini-2.0-Flash-Thinking-Exp} 
-como nuestro LLM para inferir los sentimientos a partir de 
+La investigación utilizó el modelo de Google \textit{Gemini-2.0-Flash-Thinking-Exp} 
+como el LLM para inferir los sentimientos a partir de 
 los datos disponibles. Este modelo fue seleccionado debido a su capacidad de 
 procesamiento y a la disponibilidad de una API de acceso gratuito (\cite{gemini_api_docs}).
 
@@ -130,7 +130,7 @@ uno de estos sentimientos, específicamente la indiferencia.
 Para garantizar la consistencia de las respuestas generadas por el LLM, se 
 implementó un proceso de validación que asegura que:
 \begin{itemize}
-\item El \'indice de la filas de salida coincida con el \'indice de las filas de entrada.
+\item El \'indice de las filas de salida coincida con el \'indice de las filas de entrada.
 
 \item Los sentimientos devueltos pertenezcan al conjunto de sentimientos predefinidos.
 
@@ -192,11 +192,12 @@ el modelo propuesto.
 \begin{itemize}
     \item \textbf{Markov}. Los modelos cl\'asicos de predicci\'on de 
     ubicaci\'on asumen la propiedad de Markov en las visitas a ubicaciones 
-    individuales (\cite{ashbrook2002learning}). Implementamos la Cadena de Markov de 
+    individuales (\cite{ashbrook2002learning}). Fue implementada la Cadena de Markov de 
     primer orden (1-MMC) (\cite{gambs2012next}), ya que aumentar el orden no 
     mejora el rendimiento de la predicci\'on.
-    \item \textbf{MHSA Transformer}. El modelo MHSA Transformer es el 
-    modelo sobre el que se construye nuestro modelo propuesto (\cite{Hong_2023}). 
+    \item \textbf{MHSA Transformer}. El modelo MHSA Transformer (\cite{Hong_2023}) es el 
+    modelo sobre el que se construye el modelo propuesto en la
+    presente investigación. 
     La diferencia entre estos 
     radica en que el primero no utiliza informaci\'on de contexto adicional
     para realizar la predicci\'on de 
@@ -222,7 +223,7 @@ los modelos implementados:
 
     \item \textbf{Puntaje F1 (F1).} Las visitas individuales a ubicaciones 
     son altamente desbalanceadas, con ubicaciones espec\'ificas ocurriendo 
-    con mayor frecuencia en la rutina diaria que otras. Utilizamos la 
+    con mayor frecuencia en la rutina diaria que otras. Fue utilizada la 
     puntuaci\'on F1 ponderada por el n\'umero de visitas para enfatizar 
     el rendimiento del modelo en las ubicaciones m\'as importantes.
 
@@ -271,7 +272,7 @@ los modelos implementados:
         \midrule
          1-MMC & 24.1 & 38.1 & 39.5 & 22.7 & 30.5 & 32.7 \\
          MHSA Transformer & 29.4 ± 0.8 & 53.6 ± 1.4 & 57.8 ± 1.1 & 19.7 ± 1.5 & 40.2 ± 0.8 & 44.2 ± 0.9 \\
-         Nuestro modelo & 29.6 ± 0.8 & 53.8 ± 1.5 & 57.8 ± 1.5 & 20.2 ± 1.0 & 40.5 ± 0.7 & 44.4 ± 0.8 \\
+         Modelo propuesto & 29.6 ± 0.8 & 53.8 ± 1.5 & 57.8 ± 1.5 & 20.2 ± 1.0 & 40.5 ± 0.7 & 44.4 ± 0.8 \\
         \bottomrule
     \end{tabular}
     }
@@ -283,7 +284,7 @@ los modelos implementados:
 Se presenta primero el desempe\~no de predicci\'on para todos los 
 m\'etodos considerados en la Tabla \ref{tab:2}. Para cada modelo basado en 
 aprendizaje, se entrena el modelo doce veces con diferentes 
-inicializaciones aleatorias de los par\'ametros y reportamos 
+inicializaciones aleatorias de los par\'ametros y se reporta 
 la media y la desviaci\'on est\'andar de los indicadores de 
 desempe\~no respectivos. Se utiliza la prueba U de Mann-Whitney para 
 verificar si las diferencias de desempe\~no entre los distintos modelos 
@@ -297,7 +298,9 @@ Se reporta que MHSA Transformer supera al m\'etodo 1-MMC en todos los indicadore
 excepto en la puntuaci\'on F1. La brecha de desempe\~no es grande en 
 Acc@5, Acc@10, MRR y NDCG@10, lo que implica que MHSA Transformer puede identificar 
 mejor las preferencias del usuario al considerar el conocimiento 
-colectivo de movilidad. La puntuaci\'on F1 relativamente alta del 
+colectivo de movilidad. 
+
+La puntuaci\'on F1 relativamente alta del 
 m\'etodo 1-MMC sugiere que este m\'etodo es pr\'actico si el objetivo es 
 la predicci\'on de ubicaciones esenciales. Sin embargo, sus 
 desempe\~nos siguen siendo significativamente inferiores a los modelos 
@@ -331,12 +334,13 @@ la comparación de los resultados entre ambos enfoques
 revela diferencias muy pequeñas, con variaciones en el 
 orden de 0.2 a 0.5 puntos en promedio, que se encuentran 
 dentro del rango de las desviaciones estándar reportadas. 
+
 Además, la aplicación de la prueba de Mann–Whitney U a 
 cada métrica resultó en valores p superiores a 0.05 (Ver Tabla \ref{tab:3}), lo que indica que no 
 existen diferencias estadísticamente significativas entre 
 los métodos. Estas mínimas discrepancias en el desempeño 
-sugieren que las pequeñas mejoras observadas en nuestro 
-modelo podrían atribuirse a la variabilidad inherente en 
+sugieren que las pequeñas mejoras observadas en el modelo 
+desarrollado podrían atribuirse a la variabilidad inherente en 
 las 12 ejecuciones experimentales, en lugar de a una 
 ventaja real del uso del contexto de sentimientos. 
 En conjunto, estos resultados apoyan la conclusión de que, 
@@ -349,14 +353,14 @@ sin evidencias concluyentes de que uno supere
 significativamente al otro.
 
 \subsection{Influencia del contexto de sentimientos}
-Aunque los resultados experimentales muestran que la 
-incorporación del contexto de sentimientos en nuestro modelo 
+Si bien los resultados experimentales muestran que la 
+incorporación del contexto de sentimientos en el modelo 
 no genera mejoras estadísticamente significativas en comparación 
 con el MHSA Transformer, es importante analizar en detalle cómo 
 este contexto influye en la predicción de la próxima ubicación. 
 
 Uno de los factores que pueden haber afectado
- en el desempeño de nuestro modelo 
+el desempeño del modelo efectuado 
 es la manera en que se 
 incorporó el contexto de sentimientos. En este caso, 
 los sentimientos fueron inferidos mediante un LLM 
@@ -397,7 +401,7 @@ en la estimación del estado de los individuos impacta
 significativamente en la predicción de movilidad.
 
 En conclusión, aunque la integración del contexto de 
-sentimientos en nuestro modelo no mostró mejoras 
+sentimientos en la propuesta de modelo no mostró mejoras 
 significativas respecto al MHSA Transformer, esto no 
 implica necesariamente que la información de este tipo sea 
 irrelevante. Más bien, su impacto puede depender de la 
@@ -409,21 +413,25 @@ los patrones de movilidad de los usuarios.
 A continuación interesa conocer cuánta información histórica 
 debe considerarse para que la red DL logre el rendimiento deseado. 
 Se identifica el tiempo de visita de cada registro histórico con 
-referencia a la predicción actual y alteramos la longitud de la 
+referencia a la predicción actual y se altera la longitud de la 
 secuencia de entrada controlando el número de días $D$ a considerar 
-en el pasado. Se puede 
+en el pasado. 
+
+Se puede 
 observar una tendencia general decreciente cuando aumenta el 
 número de días históricos considerados, lo que significa que 
 incluir secuencias más largas, y por lo tanto más información, 
 no necesariamente conduce a un mejor rendimiento del modelo. 
-Además, observamos dos picos en la tendencia de Acc@1 
+Además, es posible apreciar dos picos en la tendencia de Acc@1 
 correspondientes a visitas a puntos de estancia en los 7 y 14 días 
-anteriores. Los resultados de las pruebas de Mann–Whitney U 
+anteriores. 
+
+Los resultados de las pruebas de Mann–Whitney U 
 muestran que el Acc@1 obtenido de los últimos 7 días no es 
 significativamente diferente de considerar 1 día en el 
 pasado, pero sí es significativamente 
 diferente al obtenido de todas las demás longitudes de entrada. 
-Por lo tanto, concluimos 
+Por lo tanto, el estudio concluye 
 que el modelo propuesto, as\'i como el MHSA Transformer logran el mejor rendimiento 
 al considerar la movilidad realizada en los últimos 7 días. 
 Además, los picos de rendimiento sugieren que las huellas de 

@@ -82,10 +82,10 @@ variables.
 \newpage
 \section{Metodolog\'ia}
 
-Por sus resultados destacados, proponemos hacer uso de la red neuronal 
+Por sus resultados destacados, se propone hacer uso de la red neuronal 
 que utiliza información de contexto para 
 abordar la predicción de la siguiente ubicación de \cite{Hong_2023}
-con algunas modificaciones para adaptarla a la problemática. Primero, representamos el contexto 
+con algunas modificaciones para adaptarla a la problemática. Primero, es representado el contexto 
 como los sentimientos de los usuarios en los puntos de permanencia. 
 Luego, el modelo utiliza varias capas de \textit{embedding}\footnote{\textit{embedding}: 
 técnica de aprendizaje automático que convierte datos de entrada en
@@ -99,14 +99,14 @@ detallada de cada mo\'dulo.
 
 \subsection{Representación del contexto como sentimientos}
 \label{sec:sents}
-Para capturar el contexto de los puntos de permanencia utilizamos 
-los sentimientos de los usuarios en estos puntos. Sentimientos que son
-obtenidos a partir de un LLM capaz de inferirlos a partir
+Para capturar el contexto de los puntos de permanencia son utilizados 
+los sentimientos de los usuarios en estos puntos. Los sentimientos son a su vez
+obtenidos por medio de un LLM capaz de inferirlos a partir
 de la ubicación, hora, d\'ia de la semana, as\'i como del punto de inter\'es
 visitado (hospital, restaurante, etc). Si bien, al ser un LLM 
-no entrenado para este prop\'osito
-no es capaz de inferir sentimientos con total precisión
-asumimos que pueda ser suficiente para el prop\'osito de este trabajo.
+no entrenado para este prop\'osito y que por ello
+no es capaz de inferir sentimientos con total precisión,
+se asume que pueda ser suficiente para el prop\'osito de este trabajo.
 
 Los sentimientos utilizados
 son los siguientes: \textit{miedo}, \textit{hambre}, 
@@ -186,12 +186,12 @@ Un modelo preciso de predicción de ubicación requiere una selección
 y modelado adecuados de la información de la secuencia histórica. 
 Además del identificador de ubicación sin procesar y la hora de 
 visita correspondiente que se incluyen a menudo (\cite{li2020hierarchical}), 
-consideramos la duración de la actividad y las funciones de uso del 
+son tenidas en cuenta la duración de la actividad y las funciones de uso del 
 suelo $g(s),g(l)$ para describir cada punto de permanencia visitado, lo que 
 garantiza una representación completa de su contexto desde una 
 perspectiva espacio-temporal. Además, la información relacionada 
 con el usuario ayuda a descubrir las secuencias recorridas por 
-diferentes de ellos y ayuda a la red a aprender patrones de 
+diferentes sujetos y permite a la red aprender patrones de 
 movimiento específicos del usuario.
 
 Se utilizan capas de \textit{embedding} para representar características 
@@ -263,12 +263,12 @@ espacio-temporales y de contexto, y el vector de
 \subsection{Red de autoatención multicabezal}
 
 Una vez se adquieren los vectores de características 
-espacio-temporales densos en cada paso de tiempo, debemos extraer 
+espacio-temporales densos en cada paso de tiempo, es necesario extraer 
 sus patrones de transición secuencial. Estos patrones históricos 
 se capturan utilizando una red basada en MHSA, un mecanismo 
 propuesto originalmente dentro de la red transformadora para 
 abordar las tareas de traducción de idiomas (\cite{vaswani2017attention}). 
-Se adopta una arquitectura similar a las redes GPT\footnote{GPT: Generative Pre-trained Transformer} que solo incluye la parte del decodificador 
+Se adopta una arquitectura similar a la de las redes GPT\footnote{GPT: Generative Pre-trained Transformer} que solo incluye la parte del decodificador 
 del modelo transformador (\cite{radford2018improving}). El decodificador 
 consta de una pila de \(L\) bloques idénticos, cada uno con dos 
 componentes. El primero es la red de autoatención multicabezal enmascarada 
@@ -281,7 +281,7 @@ conexiones residuales, normalización de capa y capas de abandono
 a cada componente para facilitar el aprendizaje. 
 
 La salida del modelo MHSA \(out_n\) se añade al \textit{embedding} del 
-usuario \(e_{u_i}\) y juntas se introducen en un bloque residual 
+usuario \(e_{u_i}\) y juntos se introducen en un bloque residual 
 completamente conectado (FC\footnote{FC: Fully Connected}). Finalmente, 
 la probabilidad 
 predicha de cada ubicación se obtiene mediante una transformación 

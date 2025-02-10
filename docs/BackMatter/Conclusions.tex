@@ -1,19 +1,19 @@
 \begin{conclusions}
-    En este trabajo, se analiza el desempeño de diferentes modelos para 
+    El presente trabajo analiz\'o el desempeño de diferentes modelos para 
     la predicción de la próxima ubicación de usuarios en el conjunto de 
     datos Geolife. Se comparó el modelo basado en MHSA Transformer con 
-    nuestro modelo propuesto, el cual incorpora el contexto de sentimientos 
+    el modelo propuesto en la tesis, el cual incorpora el contexto de sentimientos 
     inferidos mediante un modelo de lenguaje.
 
-Los resultados muestran que ambos modelos basados en aprendizaje profundo 
+Los resultados mostraron que ambos modelos basados en aprendizaje profundo 
 superan significativamente al método de primer orden 1-MMC en casi todos 
 los indicadores de desempeño, resaltando la importancia de modelar 
 dependencias temporales a largo plazo en tareas de predicción de 
 movilidad. Sin embargo, la inclusión del contexto de sentimientos en 
-nuestro modelo no resultó en mejoras estadísticamente significativas en 
+el modelo implementado no resultó en mejoras estadísticamente significativas en 
 comparación con el MHSA Transformer, según la prueba U de Mann-Whitney.
 
-Se identificaron dos posibles razones para esta falta de significancia: 
+Fueron identificadas dos posibles razones para esta falta de significancia: 
 (i) la inferencia del contexto de sentimientos basada en información 
 limitada (hora, lugar y día de la semana) pudo no haber capturado con 
 precisión el estado emocional real de los usuarios, introduciendo ruido 
