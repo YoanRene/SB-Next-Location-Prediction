@@ -1,14 +1,15 @@
 \chapter{Estado del Arte}\label{chapter:state-of-the-art}
 El problema de predicción de la siguiente ubicación de una persona ha encontrado 
-aplicación en diversos campos, como sistemas de recomendación (\cite{xue2021mobtcast}), 
+aplicación en diversos campos: como sistemas de recomendación (\cite{xue2021mobtcast}), 
 redes de sensores (\cite{pirozmand2014human}) y análisis del comportamiento de movilidad~(\cite{wang2021reinforced,xu2022understanding}). 
+
 La definición exacta del problema varía entre los estudios dependiendo de 
 los diferentes objetivos y conjuntos de datos empleados. Por ejemplo, 
 las aplicaciones de redes sociales basadas en la ubicación (LBSN\footnote{LBSN: Location-Based Social Networks}) se 
 centran en predecir el siguiente punto de interés (POI\footnote{POI: Point of Interest}) 
 registrado (\cite{wang2022online,xue2021mobtcast}). En contraste, los estudios del comportamiento 
 de movilidad buscan comprender la siguiente ubicación de un usuario para 
-realizar una actividad~(\cite{solomon2021analyzing}). Aquí nos centramos en los métodos 
+realizar una actividad~(\cite{solomon2021analyzing}). Aquí, la investigación est\'a centrada en los métodos 
 propuestos para aplicaciones de movilidad.
 
 \section{Modelos de Markov}
@@ -17,9 +18,13 @@ predicción de la siguiente ubicación. La Cadena de Markov y sus variantes
 son probablemente los métodos más empleados para esta tarea~(\cite{luca2021survey}). 
 Estos modelos consideran las ubicaciones como estados y construyen una 
 matriz de transición que codifica la probabilidad de transición entre 
-estados para cada individuo. \cite{ashbrook2002learning} y \cite{gambs2012next} propusieron identificar ubicaciones significativas 
+estados para cada individuo. 
+
+\cite{ashbrook2002learning} y \cite{gambs2012next} propusieron identificar ubicaciones significativas 
  a partir de datos GPS y construir un modelo de Markov para predecir 
- las transiciones de ubicación. Posteriormente, las variantes del 
+ las transiciones de ubicación. 
+ 
+ Posteriormente, las variantes del 
  modelo de Markov que consideran movimientos colectivos~(\cite{chen2014nlpm}) e 
  incorporan la importancia de la ubicación~(\cite{huang2017mining}) aumentaron aún 
  más el rendimiento de la predicción. Sin embargo, los modelos basados
@@ -35,18 +40,24 @@ de modelado de secuencias ampliamente adoptado, se ha informado que
 los modelos basados en redes neuronales recurrentes (RNN\footnote{RNN: Recurrent Neural Networks}), como es el caso del
 modelo de memoria a corto y largo plazo (LSTM\footnote{LSTM: Large Short-Term Memory})~(\cite{solomon2021analyzing}) y la RNN 
 espacio-temporal (ST\footnote{ST: Spatial-Temporal})~(\cite{liu2016predicting}), superan a los modelos de Markov
- por un amplio margen en esta tarea. Aún así, los modelos RNN 
+ por un amplio margen en esta tarea. 
+ 
+ Aún así, los modelos RNN 
  convencionales tienden a subestimar las dependencias a largo 
  plazo cuando aumenta la longitud de la secuencia de entrada. 
  Por lo tanto, los estudios emplearon un mecanismo de atención 
  para capturar dinámicamente las dependencias tanto a corto 
- como a largo plazo~(\cite{feng2018deepmove,li2020hierarchical}). Además, el modelo Transformer, 
+ como a largo plazo~(\cite{feng2018deepmove,li2020hierarchical}). 
+ 
+ Además, el modelo Transformer, 
  que se basa en el mecanismo de autoatención multicabezal (MHSA\footnote{MHSA: Multi-Head Self-Attentional})~(\cite{vaswani2017attention}), 
  ha comenzado a ganar interés en el campo. En particular, \cite{xue2021mobtcast}
  propusieron MobTcast para considerar 
   varios contextos con una estructura basada en Transformer 
-  y se obtuvieron resultados de vanguardia en la predicción de POI 
-  para datos LBSN. A pesar de tener un gran potencial para 
+  y obtuvieron resultados de vanguardia en la predicción de POI 
+  para datos LBSN. 
+  
+  A pesar de tener un gran potencial para 
   aprender las complejas dependencias espacio-temporales, pocos 
   estudios han aplicado Transformer al problema de predicción 
   de ubicación debido al acercamiento reciente de estos modelos a la problem\'atica en cuesti\'on.
@@ -59,13 +70,16 @@ guiar el aprendizaje de los modelos DL. En el entorno de la movilidad,
 la elección de ubicaciones se considera una parte integral
 del comportamiento de actividad-viaje de las personas y se ha
 estudiado dentro del marco basado en la actividad~(\cite{schonfelder2016urban}). 
-Los estudios que se centran en analizar el comportamiento de 
+
+Los estudios centrados en analizar el comportamiento de 
 viaje a lo largo del tiempo sugieren que se encuentra tanto 
 estabilidad como variabilidad en las elecciones de ubicación 
 de actividad de las personas. Por ejemplo, \cite{dharmowijoyo2017analysing} mostraron que la variabilidad de las visitas
 a ubicaciones es mucho mayor entre los pares fin de 
 semana-día laborable que entre los pares día laborable-día 
-laborable y fin de semana-fin de semana. Los estudios 
+laborable y fin de semana-fin de semana. 
+
+Los estudios 
 empíricos también demuestran la correlación de diferentes
 aspectos del comportamiento de viaje individual. Por ejemplo, \cite{susilo2014repetitions} informaron una alta repetición 
 en las combinaciones de ubicación-modo de viaje, lo que sugiere que las 
@@ -94,29 +108,34 @@ visitas de ubicaciones por los individuos para predecir sus
 próximas ubicaciones, independientemente del contexto de movilidad 
 actual (\cite{laha2018real}). Esto se debe a la complejidad y 
 diversidad de los datos de contexto (\cite{tedjopurnomo2020survey}). 
+
 Con el desarrollo del aprendizaje automático, los estudios han 
 comenzado a explorar métodos para la fusión de datos de contexto y 
 emplearlos para impulsar la investigación de la movilidad humana 
 (\cite{zheng2018survey,lau2019survey}). Sin embargo, los datos de 
 contexto de múltiples fuentes poseen formatos complejos, lo que 
 dificulta su fusión en una representación unificada (\cite{liao2018multi}). 
+
 Los marcos de DL sensibles al contexto proporcionan 
 una solución para combinar información de contexto de múltiples fuentes 
 (\cite{sun2022tcsanet}), pero con mayor frecuencia se centran en el aspecto 
 temporal y pasan por alto las interacciones espacio-temporales complejas.\\
 
 Mencionar que la evoluci\'on de la problem\'atica y el auge de los grandes modelos de lenguaje natural (LLM\footnote{LLM: Large Language Models})
-han puesto a investigar otras formas de atacar el problema con muy buenos resultados (\cite{wang2024inextlargelanguage}).
+han puesto a investigar otras formas de atacar el asunto en cuesti\'on con muy buenos resultados (\cite{wang2024inextlargelanguage}).
 De aqu\'i y del tema de la utilizaci\'on del contexto para mejorar la predicci\'on, que se mantenga la necesidad de explorar
-m\'as a fondo las influencias de la informaci\'on de contexto del individuo. En particular, se har\'a
+m\'as a fondo las influencias de la informaci\'on de contexto del individuo. 
+
+En particular, se har\'a
 enf\'asis en el uso de sentimientos
 o emociones que puedan influir en la elecci\'on de la siguiente ubicaci\'on. 
 Dichos sentimientos, que en un escenario ideal podr\'ian ser extra\'idos de las redes sociales, 
 por falta de datos p\'ublicos se hace casi inviable. Entonces ser\'ia pr\'actico el empleo de los ya 
 mencionados modelos del lenguaje natural para inferir un sentimiento 
-a partir de los datos que se tienen como lo son la ubicaci\'on y el momento actual del individuo.
-Luego, queda hacer uso de un modelo en que 
-se tengan en cuenta dichos sentimientos para mejorar la predicci\'on de la siguiente ubicaci\'on.
+a partir de los datos que se tienen, como lo son la ubicaci\'on y el momento actual del individuo.
+Luego, queda hacer uso de un modelo que 
+tenga en cuenta dichos sentimientos para mejorar la predicci\'on de la siguiente ubicaci\'on.
+
 Se propone entonces utilizar el modelo de Aprendizaje Profundo basado en Transformers y MHSA de \cite{Hong_2023} 
 por sus excelentes resultados en esta problem\'atica y su capacidad 
 de capturar dependencias.

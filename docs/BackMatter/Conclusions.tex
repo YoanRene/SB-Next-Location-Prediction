@@ -1,3 +1,36 @@
 \begin{conclusions}
-    Conclusiones
+    En este trabajo, se analiza el desempeño de diferentes modelos para 
+    la predicción de la próxima ubicación de usuarios en el conjunto de 
+    datos Geolife. Se comparó el modelo basado en MHSA Transformer con 
+    nuestro modelo propuesto, el cual incorpora el contexto de sentimientos 
+    inferidos mediante un modelo de lenguaje.
+
+Los resultados muestran que ambos modelos basados en aprendizaje profundo 
+superan significativamente al método de primer orden 1-MMC en casi todos 
+los indicadores de desempeño, resaltando la importancia de modelar 
+dependencias temporales a largo plazo en tareas de predicción de 
+movilidad. Sin embargo, la inclusión del contexto de sentimientos en 
+nuestro modelo no resultó en mejoras estadísticamente significativas en 
+comparación con el MHSA Transformer, según la prueba U de Mann-Whitney.
+
+Se identificaron dos posibles razones para esta falta de significancia: 
+(i) la inferencia del contexto de sentimientos basada en información 
+limitada (hora, lugar y día de la semana) pudo no haber capturado con 
+precisión el estado emocional real de los usuarios, introduciendo ruido 
+en los datos, y (ii) la influencia de los sentimientos en la movilidad
+puede ser marginal cuando los patrones de movimiento están fuertemente 
+determinados por factores estructurales, como el trabajo o la rutina diaria.
+
+Por otro lado, el análisis del impacto de la longitud de la secuencia 
+histórica reveló que la mejor configuración para el modelo propuesto 
+se obtiene al considerar las secuencias de los últimos 7 días. 
+Además, los picos en el desempeño observados en los días 7 y 14 sugieren 
+que los patrones de movilidad pueden tener periodicidades semanales 
+relevantes para la predicción.
+
+En conclusión, si bien el contexto de sentimientos no proporcionó mejoras 
+significativas en la predicción de movilidad en este estudio, su 
+potencial utilidad podría depender de la calidad de la inferencia 
+emocional y del tipo de movilidad analizada.
+
 \end{conclusions}

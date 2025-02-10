@@ -28,9 +28,9 @@
 	backref=true
 	]{biblatex}
 \RequirePackage[linktocpage,breaklinks,colorlinks,%
-                linkcolor=black,anchorcolor=black,citecolor=black,%
+                linkcolor=cyan,anchorcolor=black,citecolor=black,%
                 filecolor=black,menucolor=black,runcolor=black,%
-                urlcolor=black]{hyperref}
+                urlcolor=cyan]{hyperref}
                 
 % fancyhdr settings from texlive-doc
 \RequirePackage{fancyhdr}

@@ -1,1 +1,431 @@
 \chapter{Detalles de Implementación y Experimentos}\label{chapter:implementation}
+\section{Datos y preprocesamiento}
+
+Se demuestra la efectividad del m\'etodo propuesto mediante la experimentaci\'on en 
+un conjunto de datos de seguimiento GNSS.
+
+\subsection{Conjunto de datos Geolife}
+El presente es un conjunto de datos p\'ublico de trayectorias GPS recopilado en el 
+proyecto GeoLife de Microsoft Research Asia por 182 usuarios durante 
+un período de más de tres años (desde abril de 2007 hasta agosto de 2012) (\cite{zheng2011geolife}). 
+En este conjunto se registra una amplia gama de movimientos al aire libre 
+de los usuarios, que incluyen no solo rutinas diarias como ir a casa o 
+al trabajo, sino también algunas actividades de entretenimiento y deportivas, 
+como compras, turismo, cenas, senderismo y ciclismo. 
+
+Una trayectoria GPS de este conjunto de datos está representada por una 
+secuencia de puntos con marca de tiempo, cada uno de los cuales contiene 
+información de latitud, longitud y altitud. Esta serie de datos 
+contiene 17,621 trayectorias con una distancia total de aproximadamente 
+1.2 millones de kilómetros y una duración total de más de 48,000 horas. 
+Estas trayectorias fueron registradas por diferentes dispositivos GPS y 
+teléfonos con GPS, y tienen una variedad de tasas de muestreo. 
+El 91 por ciento de las trayectorias se registraron en una representación 
+densa, por ejemplo, cada 1-5 segundos o cada 5-10 metros por punto.
+
+Se sigue el marco propuesto 
+por \cite{Zheng2010GeoLife} y se clasifica las trayectorias GPS en puntos 
+de permanencia y etapas de movimiento utilizando la biblioteca 
+Trackintel (\cite{martin2023trackintel}).\\
+
+Las trazas de movimiento de los estudios de seguimiento GNSS se 
+preprocesan para la predicci\'on de la siguiente ubicaci\'on. 
+Pre-filtramos los conjuntos de datos para considerar solo a los 
+usuarios observados por m\'as de 50 d\'ias 
+en Geolife, garantizando un tiempo de observaci\'on prolongado. 
+Se utiliza la cobertura temporal de seguimiento, que 
+cuantifica la proporci\'on de tiempo en que se registran los 
+desplazamientos de los usuarios, para evaluar as\'i la calidad del 
+seguimiento en la dimensi\'on temporal. Despu\'es de este proceso, 
+permanecen 45 usuarios en Geolife.
+
+Las ubicaciones se generan a partir de la secuencia individual 
+de puntos de permanencia visitados. Consideramos un punto de permanencia como 
+una actividad si su duraci\'on es superior a 25 minutos. Luego, los 
+puntos de permanencia de actividad se agrupan espacialmente en ubicaciones 
+para considerar visitas al mismo lugar en diferentes momentos. Se utiliza 
+la funci\'on proporcionada en Trackintel con los par\'ametros 
+$\epsilon = 20$ y $\text{num\_samples} = 2$ para generar las ubicaciones 
+del conjunto de datos (\cite{Hong2021Clustering}). La Tabla \ref{tabla:estadisticas} 
+muestra estad\'isticas b\'asicas para el conjunto de datos.\\
+
+\begin{table}[h]
+    \centering
+    \caption{Estadísticas básicas del conjunto de datos de movilidad. Se reportan la media y la desviación estándar entre los usuarios.}
+    \label{tabla:estadisticas}
+    \begin{tabular}{lc}
+        \hline
+        & \textbf{Geolife} \\ \hline
+        Número de usuarios & 45 \\
+        Período de seguimiento (días) & $345 \pm 413$ \\
+        \#Puntos de permanencia por usuario & $369 \pm 456$ \\
+        \#Puntos de permanencia por usuario por día & $2.4 \pm 1.5$ \\
+        \#Ubicaciones por usuario & $77 \pm 108$ \\
+        Tamaño de las ubicaciones (m$^2$) & $3606 \pm 12275$ \\
+        Cobertura de seguimiento (\%) & $44 \pm 24$ \\ \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Generaci\'on de los sentimientos}
+Para la generación de sentimientos, se utilizó el modelo de Google \textit{Gemini-2.0-Flash-Thinking-Exp} 
+como nuestro LLM para inferir los sentimientos a partir de 
+los datos disponibles. Este modelo fue seleccionado debido a su capacidad de 
+procesamiento y a la disponibilidad de una API de acceso gratuito (\cite{gemini_api_docs}).
+
+\subsubsection{Preprocesamiento de Datos}
+
+Con el objetivo de que el LLM pudiera inferir los sentimientos a partir de la 
+información de ubicación, hora y día, se realizó un proceso de transformación 
+de estos datos para hacerlos más comprensibles para el modelo. La ubicación, 
+originalmente representada en coordenadas de latitud y longitud, fue 
+convertida a una dirección en lenguaje natural mediante el uso de la 
+técnica de \textit{reverse geocoding}, utilizando la API proporcionada 
+por \cite{geocode_maps_co}. La hora fue transformada al 
+formato \textit{HH:MM AM/PM}, y el día fue representado como el día de 
+la semana correspondiente. Con esta información, se construyó un nuevo 
+conjunto de datos en formato CSV, el cual fue utilizado como entrada para el LLM.
+
+\subsubsection{Construcción del Prompt}
+
+El prompt utilizado para guiar al LLM en la inferencia de sentimientos 
+fue diseñado a través de un proceso iterativo de prueba y error, con el 
+fin de asegurar que las respuestas generadas fueran coherentes y relevantes. 
+El prompt utilizado fue el siguiente:
+\begin{verbatim}
+    f"""You are a sentiment analysis expert.
+You will be given a dataset and you will have to create a
+situational context for each row of this dataset, with the provided 
+information, that it is just the time and location;
+from this context your main goal is to identify a sentiment from the 
+following list of sentiments: {sentiments}.
+You will have to return the sentiment that is most prominent in 
+the situational context.
+If you are unable to identify the sentiment,
+you will have to return '{default_sentiment}'. You will have to 
+return only the sentiment and a brief explanation of why you chose 
+that sentiment.
+The Output should be in a structured CSV with columns: 
+index, sentiment, explanation. Provide only CSV-formatted output.
+The index of the output must be the same of the input. 
+The sentiment must be in lowercase.
+The explanation should be between double quotes and 
+can't have chinese characters.
+You must provide output for all rows in the input.
+
+    Example:
+        Input: 17,968,Friday,Friday,10:35 AM,12:32 PM,
+        "KFC, Chengfu Road, Wudaokou, Dongsheng, Haidian District, 
+        Beijing, 100190, China"
+        Output: 17,hunger,"Being at KFC during late morning/noon 
+        suggests hunger for lunch."
+"""
+\end{verbatim}
+
+En este prompt, \textit{sentiments} hace referencia a la lista de sentimientos 
+mencionados en la sección \ref{sec:sents}, y \textit{default\_sentiment} corresponde a 
+uno de estos sentimientos, específicamente la indiferencia.
+
+\subsubsection{Validación de Respuestas}
+
+Para garantizar la consistencia de las respuestas generadas por el LLM, se 
+implementó un proceso de validación que asegura que:
+\begin{itemize}
+\item El \'indice de la filas de salida coincida con el \'indice de las filas de entrada.
+
+\item Los sentimientos devueltos pertenezcan al conjunto de sentimientos predefinidos.
+
+\item El formato de salida cumpla con la estructura especificada: 
+\textit{index, sentiment, explanation}.
+\end{itemize}
+En caso de que alguna de estas condiciones no se cumpliera, se realizaba una 
+nueva petición al LLM hasta obtener una respuesta válida.
+
+\subsubsection{Conversión de Sentimientos a Valores Numéricos}
+
+Finalmente, los sentimientos inferidos por el LLM fueron convertidos a 
+valores numéricos en el rango de 0 a 4, inclusive. Estos valores fueron 
+incorporados al conjunto de datos utilizado para el entrenamiento del 
+modelo principal.
+
+\section{Entrenamiento del modelo}
+
+Se divide el conjunto de datos, con la información de los sentimientos
+a\~nadida, en conjuntos de
+entrenamiento, validaci\'on y prueba sin superposici\'on, con una 
+proporci\'on de 6:2:2 basada en el tiempo. Para cada usuario, 
+las secuencias de puntos de permanencia correspondientes al 
+primer 60\% de los días de seguimiento se emplean para el 
+entrenamiento del modelo, mientras que el 20\% final se 
+reserva para la fase de prueba. Los parámetros de la red 
+de predicción se ajustan utilizando el conjunto de 
+entrenamiento, y el conjunto de validación se emplea para 
+monitorear la pérdida del modelo. 
+Se efect\'ua \textit{grid search}\footnote{\textit{grid search}: 
+T\'ecnica tradicional de optimización de 
+hiperparámetros, que no es más que una búsqueda exhaustiva a través de 
+un subconjunto especificado manualmente del espacio de hiperparámetros 
+de un algoritmo de aprendizaje. Un algoritmo de \textit{grid search} debe 
+guiarse por alguna métrica de rendimiento, normalmente medida por validación 
+cruzada en el conjunto de entrenamiento o evaluación en un conjunto de validación de espera.}
+sobre los hiperpar\'ametros en el conjunto de validaci\'on. Finalmente, 
+se eval\'ua y se reporta el 
+desempe\~no del modelo utilizando el conjunto de prueba.
+
+Durante el entrenamiento, se minimiza la Ecuaci\'on (\ref{eq:4}) con el optimizador 
+Adam sobre lotes de muestras de datos de entrenamiento, con una tasa de 
+aprendizaje inicial de $1e^{-3}$ y una penalizaci\'on L2 de $1e^{-6}$. 
+Se adopta una estrategia de parada temprana para detener el aprendizaje si 
+la p\'erdida de validaci\'on deja de disminuir durante 3 \'epocas. Luego, 
+la tasa de aprendizaje se multiplica por 0.1 y el entrenamiento se 
+reanuda desde el modelo con la menor p\'erdida de validaci\'on. Este proceso 
+de parada temprana se repite 3 veces. Adem\'as, se implementa un 
+calentamiento de la tasa de aprendizaje durante 2 \'epocas y una deca\'ida 
+lineal de 0.98 por \'epoca posteriormente (\cite{vaswani2017attention}).
+
+\section{Modelos de predicci\'on de referencia}
+
+Se compara el rendimiento de este modelo con el m\'etodo 
+clásico de predicci\'on de ubicaci\'on basado en Markov y con el modelo 
+de predicci\'on de ubicaci\'on sobre el que est\'a construido 
+el modelo propuesto.
+
+\begin{itemize}
+    \item \textbf{Markov}. Los modelos cl\'asicos de predicci\'on de 
+    ubicaci\'on asumen la propiedad de Markov en las visitas a ubicaciones 
+    individuales (\cite{ashbrook2002learning}). Implementamos la Cadena de Markov de 
+    primer orden (1-MMC) (\cite{gambs2012next}), ya que aumentar el orden no 
+    mejora el rendimiento de la predicci\'on.
+    \item \textbf{MHSA Transformer}. El modelo MHSA Transformer es el 
+    modelo sobre el que se construye nuestro modelo propuesto (\cite{Hong_2023}). 
+    La diferencia entre estos 
+    radica en que el primero no utiliza informaci\'on de contexto adicional
+    para realizar la predicci\'on de 
+    ubicaci\'on, como es el caso de los sentimientos.
+\end{itemize}
+
+\section{M\'etricas de Evaluaci\'on}
+
+Se utilizan las siguientes m\'etricas para cuantificar el rendimiento de 
+los modelos implementados:
+
+\begin{itemize}
+    \item \textbf{Exactitud (Accuracy).} Mide la correcci\'on de la 
+    ubicaci\'on predicha en comparaci\'on con la ubicaci\'on real visitada 
+    a continuaci\'on. Pr\'acticamente, se ordena el vector de probabilidades 
+    de ubicaci\'on $P (\hat{l}_{n+1})$, obtenido de la Ecuaci\'on (\ref{ec:3}), en orden 
+    descendente y se verifica si la ubicaci\'on real aparece entre las 
+    k mejores predicciones, Acc@k mide la proporci\'on de veces que esto 
+    es cierto en el conjunto de prueba. En la literatura sobre predicci\'on 
+    de ubicaciones, esta m\'etrica tambi\'en se conoce como Recall@k 
+    o Hit Ratio@k. Se reportan Acc@1, Acc@5 y Acc@10 para permitir 
+    comparaciones con otros trabajos.
+
+    \item \textbf{Puntaje F1 (F1).} Las visitas individuales a ubicaciones 
+    son altamente desbalanceadas, con ubicaciones espec\'ificas ocurriendo 
+    con mayor frecuencia en la rutina diaria que otras. Utilizamos la 
+    puntuaci\'on F1 ponderada por el n\'umero de visitas para enfatizar 
+    el rendimiento del modelo en las ubicaciones m\'as importantes.
+
+    \item \textbf{Rango rec\'iproco medio (MRR).} Calcula el promedio del 
+    rec\'iproco del rango en el que se recuper\'o la primera entrada 
+    relevante en el vector de predicci\'on:
+    \begin{equation}
+        MRR = \frac{1}{N} \sum_{i=1}^{N} \frac{1}{\text{rank}_i} \tag{5}
+    \end{equation}
+    donde $N$ denota el n\'umero de muestras de prueba y $\text{rank}_i$ 
+    es el rango de la ubicaci\'on real en $P (\hat{l}_{n+1})$ para 
+    la $i$-\'esima muestra de prueba.
+
+    \item \textbf{Ganancia acumulativa con descuento normalizada (NDCG).} 
+    Mide la calidad del vector de predicci\'on por la relaci\'on entre la 
+    ganancia acumulativa con descuento (DCG) y la ganancia acumulativa con 
+    descuento ideal (IDCG):
+    \begin{equation}
+        NDCG = \frac{1}{N} \sum_{i=1}^{N} \frac{DCG_i}{IDCG_i}, 
+        \quad \text{donde} \quad DCG_i = \sum_{j=1}^{|\mathcal{O}|} \frac{r_j}{\log_2(j + 1)} \tag{6}
+    \end{equation}
+    donde $r_j$ denota el valor de relevancia en la posici\'on $j$. 
+    En el contexto de la predicci\'on de ubicaciones, $r_j$ es binario, 
+    es decir, $r_j \in \{0, 1\}$, y $r_j = 1$ si y solo si el $j$-\'esimo 
+    elemento en el ordenado $P (\hat{l}_{n+1})$ corresponde a la 
+    ubicaci\'on real siguiente. NDCG@k mide la relevancia de los 
+    resultados hasta la posici\'on k en el ranking. En la 
+    evaluaci\'on, se reporta NDCG@10.
+\end{itemize}
+\newpage
+\section{Resultados}
+
+
+\subsection{Resultados de Desempe\~no}
+
+\begin{table}[h]
+    \centering
+    \caption{Resultados de evaluación del rendimiento para la predicción de la próxima ubicación 
+    sobre el conjunto de datos Geolife. Se reporta el promedio y la desviación estándar 
+    en 12 ejecuciones diferentes.}
+    \label{tab:2}
+    \resizebox{1\textwidth}{!}{
+    \begin{tabular}{lccccccc}
+        \toprule
+        Método & Acc@1 & Acc@5 & Acc@10 & F1 & MRR & NDCG@10 \\
+        \midrule
+         1-MMC & 24.1 & 38.1 & 39.5 & 22.7 & 30.5 & 32.7 \\
+         MHSA Transformer & 29.4 ± 0.8 & 53.6 ± 1.4 & 57.8 ± 1.1 & 19.7 ± 1.5 & 40.2 ± 0.8 & 44.2 ± 0.9 \\
+         Nuestro modelo & 29.6 ± 0.8 & 53.8 ± 1.5 & 57.8 ± 1.5 & 20.2 ± 1.0 & 40.5 ± 0.7 & 44.4 ± 0.8 \\
+        \bottomrule
+    \end{tabular}
+    }
+\end{table}
+
+
+
+
+Se presenta primero el desempe\~no de predicci\'on para todos los 
+m\'etodos considerados en la Tabla \ref{tab:2}. Para cada modelo basado en 
+aprendizaje, se entrena el modelo doce veces con diferentes 
+inicializaciones aleatorias de los par\'ametros y reportamos 
+la media y la desviaci\'on est\'andar de los indicadores de 
+desempe\~no respectivos. Se utiliza la prueba U de Mann-Whitney para 
+verificar si las diferencias de desempe\~no entre los distintos modelos 
+son significativas. Los modelos de aprendizaje profundo (DL) se 
+entrenan en los datos de toda la poblaci\'on, utilizando identificadores 
+de usuario para distinguir las secuencias registradas de diferentes usuarios. 
+Se introducen secuencias hist\'oricas de los \'ultimos $D = 7$ d\'ias en 
+todos los modelos DL para garantizar su comparabilidad.
+
+Se reporta que MHSA Transformer supera al m\'etodo 1-MMC en todos los indicadores 
+excepto en la puntuaci\'on F1. La brecha de desempe\~no es grande en 
+Acc@5, Acc@10, MRR y NDCG@10, lo que implica que MHSA Transformer puede identificar 
+mejor las preferencias del usuario al considerar el conocimiento 
+colectivo de movilidad. La puntuaci\'on F1 relativamente alta del 
+m\'etodo 1-MMC sugiere que este m\'etodo es pr\'actico si el objetivo es 
+la predicci\'on de ubicaciones esenciales. Sin embargo, sus 
+desempe\~nos siguen siendo significativamente inferiores a los modelos 
+basados en DL en el conjunto de datos considerado. Esta diferencia 
+enfatiza la importancia de considerar dependencias a largo plazo y 
+contextos espaciotemporales en la tarea de predicci\'on.
+
+\begin{table}[h]
+    \centering
+    \caption{Resultados de la prueba U de Mann–Whitney para la comparación de MHSA Transformer y el modelo propuesto.}
+    \label{tab:3}
+    \begin{tabular}{lc}
+        \toprule
+        Métrica & Valor p \\
+        \midrule
+        NDCG@10 & 0.750832 \\
+        F1      & 0.157213 \\
+        Acc@1   & 0.772734 \\
+        Acc@5   & 0.862312 \\
+        Acc@10  & 0.685977 \\
+        MRR     & 0.506721 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+\newpage
+El modelo propuesto, que utiliza como contexto los 
+sentimientos, obtiene los mejores resultados en todos los 
+indicadores, presentando ligeramente mejores promedios en 
+comparación con el MHSA Transformer. Sin embargo, 
+la comparación de los resultados entre ambos enfoques 
+revela diferencias muy pequeñas, con variaciones en el 
+orden de 0.2 a 0.5 puntos en promedio, que se encuentran 
+dentro del rango de las desviaciones estándar reportadas. 
+Además, la aplicación de la prueba de Mann–Whitney U a 
+cada métrica resultó en valores p superiores a 0.05 (Ver Tabla \ref{tab:3}), lo que indica que no 
+existen diferencias estadísticamente significativas entre 
+los métodos. Estas mínimas discrepancias en el desempeño 
+sugieren que las pequeñas mejoras observadas en nuestro 
+modelo podrían atribuirse a la variabilidad inherente en 
+las 12 ejecuciones experimentales, en lugar de a una 
+ventaja real del uso del contexto de sentimientos. 
+En conjunto, estos resultados apoyan la conclusión de que, 
+aunque el enfoque de incorporar sentimientos como contexto 
+logra obtener promedios ligeramente superiores en los 
+indicadores evaluados, ambos métodos presentan un 
+rendimiento prácticamente similar en la predicción de 
+la próxima ubicación sobre el conjunto de datos Geolife, 
+sin evidencias concluyentes de que uno supere 
+significativamente al otro.
+
+\subsection{Influencia del contexto de sentimientos}
+Aunque los resultados experimentales muestran que la 
+incorporación del contexto de sentimientos en nuestro modelo 
+no genera mejoras estadísticamente significativas en comparación 
+con el MHSA Transformer, es importante analizar en detalle cómo 
+este contexto influye en la predicción de la próxima ubicación. 
+
+Uno de los factores que pueden haber afectado
+ en el desempeño de nuestro modelo 
+es la manera en que se 
+incorporó el contexto de sentimientos. En este caso, 
+los sentimientos fueron inferidos mediante un LLM 
+utilizando únicamente información como la hora, el lugar y 
+el día de la semana. Dado que el LLM no tenía acceso a 
+información subjetiva o explícita de los usuarios, 
+las etiquetas de sentimientos generadas no  
+capturan de manera precisa el estado real de 
+los individuos en cada momento.
+
+Además, debido a la aleatoriedad inherente en la 
+generación de texto por parte de los modelos de 
+lenguaje, es posible que la asignación de sentimientos no 
+haya sido consistente a los datos de los que se infiere, 
+lo que introduce una fuente 
+adicional de ruido en los datos. Esta incertidumbre 
+en la inferencia del contexto de estado de los individuos 
+puede haber reducido 
+el impacto del componente de sentimientos en la tarea de 
+predicción, haciendo que las diferencias con el modelo base 
+no sean lo suficientemente pronunciadas para alcanzar 
+significancia estadística.
+
+Otro aspecto a considerar es que, aunque el contexto de 
+sentimientos puede ser útil en ciertos escenarios, su 
+relevancia en la predicción de la próxima ubicación podría 
+depender de la naturaleza de los datos de movilidad. 
+Si los patrones de movimiento de los usuarios están 
+mayormente determinados por factores rutinarios o 
+estructurales (por ejemplo, trabajo, estudios, 
+transporte público), el efecto de los sentimientos en la 
+predicción podría ser marginal. Para evaluar esto, futuras 
+investigaciones podrían explorar la incorporación de fuentes 
+de datos más ricas, como registros de actividad en redes 
+sociales o encuestas directas, para mejorar la calidad de 
+la inferencia emocional y analizar si una mayor precisión 
+en la estimación del estado de los individuos impacta 
+significativamente en la predicción de movilidad.
+
+En conclusión, aunque la integración del contexto de 
+sentimientos en nuestro modelo no mostró mejoras 
+significativas respecto al MHSA Transformer, esto no 
+implica necesariamente que la información de este tipo sea 
+irrelevante. Más bien, su impacto puede depender de la 
+calidad y fiabilidad de los sentimientos inferidos, 
+así como de la influencia real que estos tengan en 
+los patrones de movilidad de los usuarios.
+
+\subsection{Impacto de las longitudes de entrada históricas}
+A continuación interesa conocer cuánta información histórica 
+debe considerarse para que la red DL logre el rendimiento deseado. 
+Se identifica el tiempo de visita de cada registro histórico con 
+referencia a la predicción actual y alteramos la longitud de la 
+secuencia de entrada controlando el número de días $D$ a considerar 
+en el pasado. Se puede 
+observar una tendencia general decreciente cuando aumenta el 
+número de días históricos considerados, lo que significa que 
+incluir secuencias más largas, y por lo tanto más información, 
+no necesariamente conduce a un mejor rendimiento del modelo. 
+Además, observamos dos picos en la tendencia de Acc@1 
+correspondientes a visitas a puntos de estancia en los 7 y 14 días 
+anteriores. Los resultados de las pruebas de Mann–Whitney U 
+muestran que el Acc@1 obtenido de los últimos 7 días no es 
+significativamente diferente de considerar 1 día en el 
+pasado, pero sí es significativamente 
+diferente al obtenido de todas las demás longitudes de entrada. 
+Por lo tanto, concluimos 
+que el modelo propuesto, as\'i como el MHSA Transformer logran el mejor rendimiento 
+al considerar la movilidad realizada en los últimos 7 días. 
+Además, los picos de rendimiento sugieren que las huellas de 
+movilidad de una o dos semanas atrás llevan información adicional 
+que es beneficiosa para predecir la visita al lugar del día actual.

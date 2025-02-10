@@ -1,10 +1,10 @@
 \chapter{Propuesta}\label{chapter:proposal}
 \section{Definición del Problema}
 
-Introducimos un conjunto de términos y nociones 
-utilizados en el resto del documento y formulamos el problema de 
-predicción de la siguiente ubicación. Los datos de movilidad se 
-recopilan típicamente a través de dispositivos electrónicos y se 
+A continuación aparecen un conjunto de términos y nociones 
+que ser\'an utilizados en el resto del documento y habr\'a una formulación del problema de 
+predicción de la siguiente ubicación. Los datos de movilidad son 
+recopilados típicamente a través de dispositivos electrónicos y se 
 almacenan como trayectorias espacio-temporales. Cada punto de 
 seguimiento en la trayectoria de un usuario contiene un par de 
 coordenadas espaciales y una marca de tiempo.\\
@@ -36,7 +36,7 @@ $\langle t, d, g(s) \rangle$, donde $t$ y $d$ representan la
 marca de tiempo de inicio y la duración de la permanencia, 
 respectivamente, y $g(s)$ denota la geometría, a menudo 
 representada como el centro de sus puntos de seguimiento. 
-Usamos $S_k$ para denotar el $k$-ésimo punto de permanencia 
+$S_k$ es usada para denotar el $k$-ésimo punto de permanencia 
 en la trayectoria GNSS de un usuario.\\
 
 
@@ -47,32 +47,32 @@ donde $l$ es el identificador de la ubicación,
 y $g(l)$ denota la geometría de la ubicación, calculada como la 
 envolvente convexa de todos los puntos de permanencia contenidos. 
 Por lo tanto, cada ubicación se define como un área. 
-Definimos $\mathcal{O}_i$ como el conjunto que contiene las 
+$\mathcal{O}_i$ es definida como el conjunto que contiene las 
 ubicaciones conocidas para el usuario $u_i$, y 
 $\mathcal{O} = \{\mathcal{O}_1, \dots, \mathcal{O}_{|\mathcal{U}|} \}$ 
 como el conjunto que contiene todas las ubicaciones.\\
 
 
 Mediante la generación de ubicaciones cada punto de permanencia 
-se enriquece, y si añadimos tambi\'en información de contexto que 
-representa un sentimiento del usuario en dicho punto, llam\'emosle a este $f$, se tiene
+se enriquece, y si es añadida tambi\'en información de contexto que 
+representa un sentimiento del usuario en dicho punto, ll\'amese a este $f$, se tiene
 $S = \langle t, d, g(s), f, l, g(l) \rangle$; y entonces la movilidad de 
 un usuario se puede representar como una secuencia ordenada en 
 el tiempo de $N$ puntos de permanencia visitados $(S_k)_{k=1}^N$.
-A continuación, definimos el problema de predicción de la 
-siguiente ubicación.\\
+A continuación, el problema de predicción de la 
+siguiente ubicación ser\'ia:\\
 
 \textbf{Problema 1 (Predicción de la Siguiente Ubicación).} 
 Considere una secuencia de puntos de permanencia con información 
 de contexto $(S_k)_{k=m}^n$ visitada por el usuario $u_i$ en una 
-ventana de tiempo desde el paso de tiempo $m$ hasta $n$, el 
+ventana de tiempo desde el paso de tiempo $m$ hasta $n$. El 
 objetivo es predecir la ubicación que el mismo usuario visitará 
 en el siguiente paso de tiempo, es decir, el identificador de 
 ubicación $l_{n+1} \in \mathcal{O}$.\\
 
 La longitud de la ventana temporal determina cuánta información 
-histórica se considera en el modelo predictivo. Aquí, construimos 
-la secuencia histórica basándonos en la movilidad realizada en 
+histórica se considera en el modelo predictivo. Aquí, se construye 
+la secuencia histórica teniendo como base la movilidad realizada en 
 los últimos \(D \in \{0, 1, \dots, 14\}\) días.
 Por lo tanto, la longitud de la ventana histórica depende del 
 usuario \(u_i\) y del paso de tiempo actual \(n\). 
@@ -98,7 +98,7 @@ A continuación, se proporciona una descripción
 detallada de cada mo\'dulo.
 
 \subsection{Representación del contexto como sentimientos}
-
+\label{sec:sents}
 Para capturar el contexto de los puntos de permanencia utilizamos 
 los sentimientos de los usuarios en estos puntos. Sentimientos que son
 obtenidos a partir de un LLM capaz de inferirlos a partir
@@ -106,7 +106,7 @@ de la ubicación, hora, d\'ia de la semana, as\'i como del punto de inter\'es
 visitado (hospital, restaurante, etc). Si bien, al ser un LLM 
 no entrenado para este prop\'osito
 no es capaz de inferir sentimientos con total precisión
-es suficiente para el prop\'osito de este trabajo.
+asumimos que pueda ser suficiente para el prop\'osito de este trabajo.
 
 Los sentimientos utilizados
 son los siguientes: \textit{miedo}, \textit{hambre}, 
@@ -118,9 +118,68 @@ en el \'ambito de la salud p\'ublica.
 
 Una vez inferidos por el modelo del lenguaje, los sentimientos pasan a ser 
 representados como vectores de \textit{embedding} y son utilizados
-para entrenar el modelo de predicción de ubicación, \(e_{f_k}\) representa
-el \textit{embedding} del sentimiento \(f\) en el punto de permanencia \(S_k\).
+para entrenar el modelo de predicción de ubicación; \(e_{f_k}\) representa
+el \textit{embedding} del sentimiento \(f\) en el punto de permanencia \(S_k\).\\
 
+\begin{figure}
+    \centering
+\begin{tikzpicture}[transform shape, scale=0.7,node distance=2cm]
+
+    % Nodes
+    \node (useri) [startstop] {\(u_i\)};
+    \node (user) [process, below of=useri] {Embedding de usuario};
+    \node (sq1) [squares, below of=user] {};
+    \node (sq1l) [squares, left of=sq1,xshift=1cm] {};
+    \node (sq1r) [squares, right of=sq1,xshift=-1cm] {};
+    \node (sq2) [plus, right of=sq1,xshift=0.5cm] {\textbf{+}};
+    \node (fcrb) [process, below of=sq2] {FC bloque residual};
+    \node (sq3l) [squares, right of=sq2,xshift=-0.5cm] {};
+    \node (sq3) [squares, right of=sq3l,xshift=-1cm] {};
+    \node (sq3r) [squares, right of=sq3,xshift=-1cm] {};
+    \node (sq4) [squares, below of=fcrb] {};
+    \node (sq4l) [squares, left of=sq4,xshift=1cm] {};
+    \node (sq4r) [squares, right of=sq4,xshift=-1cm] {};
+    \node (mhsa) [process, above of=sq3] {MHSA};
+    \node (loss) [plus,left of=sq4l,xshift=-1cm] {\(l_{n+1}\)};
+    \node (loss2) [plus,below of=sq4,yshift=0.9cm] {\(\hat{l}_{n+1}\)};
+    \node (plus) [plus, right of=mhsa,xshift=2cm] {\textbf{+}};
+    \node (le) [process,right of=plus,xshift=1.5cm] {Embedding de ubicación};
+    \node (de) [process, below of=le] {Embedding de Duraci\'on};
+    \node (te) [process, below of=de] {Embedding de Tiempo};
+    \node (se) [process, below of=te] {Embedding de Sentimiento};
+    \node (l) [startstop, right of = le,xshift=2cm] {\(l_k\)};
+    \node (d) [startstop, right of = de,xshift=2cm] {\(d_k\)};
+    \node (t) [startstop, right of = te,xshift=2cm] {\(t_k\)};
+    \node (f) [startstop, right of = se,xshift=2cm] {\(f_k\)};
+    \node (pe) [plus,above of =le] {Codificación posicional};
+    \node (sk) [plus,above of = l,yshift=-0.5cm] {\(S_k\)};
+    \node[draw, dashed, inner sep=5pt, fit=(l) (d) (t) (f) (sk)] (group) {};
+    \node [draw, dashed, inner sep=8pt, fit=(pe) (le) (de) (te) (se) (group) (plus)] (group2) {};
+     % Coordinates for the variables
+
+
+    % arrows
+    \draw [arrow] (pe) -| (plus);
+    \draw [arrow] (l) -- (le);
+    \draw [arrow] (d) -- (de);
+    \draw [arrow] (t) -- (te);
+    \draw [arrow] (f) -- (se);
+    \draw [arrow] (plus) -- (mhsa) node[midway,above] {\(e_{all_k}\)};
+    \draw [doublearrow,dashed] (sq4l) -- (loss) node[midway,above] {\(\mathcal{L}\)};
+    \draw [arrow] (fcrb) -- (sq4) node[midway, right] {Softmax};
+    \draw [arrow] (sq2) -- (fcrb);
+    \draw [arrow] (useri) -- (user);
+    \draw [arrow] (user) -- (sq1) node[midway, left] {\(e_{u_i}\)};
+    \draw [arrow] (mhsa) -- (sq3);
+    \draw [arrow] (se) -| (plus) ;
+    \draw [arrow] (te) -| (plus) ;
+    \draw [arrow] (de) -| (plus) ;
+    \draw [arrow] (le) -- (plus) ;
+    \end{tikzpicture}
+    \caption{Capas de embedding y la red basada en MHSA para 
+    la predicción de la próxima ubicación.}
+    \label{fig:1}
+\end{figure}
 \subsection{Generación de \textit{embeddings} espacio-temporales}
 
 Un modelo preciso de predicción de ubicación requiere una selección 
@@ -148,17 +207,21 @@ son más compactos y pueden capturar eficazmente la correlación
 latente entre diferentes tipos de características (\cite{xu2022understanding}). 
 Estas capas son matrices de parámetros que proporcionan mapeos 
 entre la variable original y el vector de \textit{embedding}, optimizadas 
-conjuntamente con toda la red.
+conjuntamente con toda la red. El proceso de \textit{embedding}, as\'i
+como la arquitectura del modelo, se muestran en la Figura \ref{fig:1}.
 
 Operacionalmente, dado un punto de permanencia \(S_k\) en la 
 secuencia histórica, su identificador de ubicación \(l_k\), 
 la hora de llegada \(t_k\) y la duración de la estancia \(d_k\) 
 se introducen en sus respectivas capas de \textit{embedding} para 
-generar representaciones vectoriales:\\
+generar representaciones vectoriales:
 
-\(e_{l_k} = h_l(l_k; \mathbf{W}_l)\)
-\(e_{t_k} = h_t(t_k; \mathbf{W}_t)\)
-\(e_{d_k} = h_d(d_k; \mathbf{W}_d)\) (1)\\
+\begin{equation}
+    e_{l_k} = h_l(l_k; \mathbf{W}_l), 
+    e_{t_k} = h_t(t_k; \mathbf{W}_t), 
+    e_{d_k} = h_d(d_k; \mathbf{W}_d) \tag{1}
+    \label{eq:1}
+\end{equation}
 
 donde \(e_{l_k}\), \(e_{t_k}\) y \(e_{d_k}\) son los respectivos 
 vectores de \textit{embedding} para \(l_k\), \(t_k\) y \(d_k\). 
@@ -174,9 +237,11 @@ Finalmente, el vector de \textit{embedding} general
 $e_{all_k}$ para el punto de permanencia $S_k$ se obtiene 
 añadiendo sus características espacio-temporales, as\'i como su contexto
 basado en sentimientos $e_{f_k}$, junto con una codificación posicional 
-$PE$ que codifica la información de secuencia $k$:\\
+$PE$ que codifica la información de secuencia $k$:
 
-\(e_{all_k}  = e_{l_k} + e_{t_k} + e_{d_k} + e_{f_k} + PE\) (2)\\
+\begin{equation}
+    e_{all_k}  = e_{l_k} + e_{t_k} + e_{d_k} + e_{f_k} + PE \tag{2}
+\end{equation}
 
 El modelo usa la codificación posicional original propuesta por 
 \cite{vaswani2017attention} que utiliza funciones seno y coseno. 
@@ -220,9 +285,13 @@ usuario \(e_{u_i}\) y juntas se introducen en un bloque residual
 completamente conectado (FC\footnote{FC: Fully Connected}). Finalmente, 
 la probabilidad 
 predicha de cada ubicación se obtiene mediante una transformación 
-\textit{softmax}\footnote{\textit{softmax}: Es una función que convierte un vector de valores reales en una distribución de probabilidad.}:\\
+\textit{softmax}\footnote{\textit{softmax}: Es una función que convierte 
+un vector de valores reales en una distribución de probabilidad.}:
 
-\(P(\hat{l}_{n+1}) = \text{Softmax}(f_{FC}(out_n + e_{u_i}; \mathbf{W}_{FC}))\) (3)\\
+\begin{equation}
+P(\hat{l}_{n+1}) = \text{Softmax}(f_{FC}(out_n + e_{u_i}; \mathbf{W}_{FC}))  \tag{3}
+\label{ec:3}
+\end{equation}
 
 donde \(f_{FC}(\cdot; \cdot)\) representa la operación del 
 bloque residual FC. Este bloque consta de capas lineales con 
@@ -237,9 +306,12 @@ Durante el entrenamiento, con acceso a la siguiente ubicación
 real \(l_{n+1}\), la tarea puede considerarse como un problema de 
 clasificación multiclase. Por lo tanto, los parámetros del modelo 
 se pueden optimizar utilizando la pérdida de entropía cruzada 
-multiclase \(\mathcal{L}\):\\
+multiclase \(\mathcal{L}\):
 
-\(\mathcal{L} = -\sum_{k=1}^{|\mathcal{O}|} P(l_{n+1})(k) \log(P(\hat{l}_{n+1})(k))\) (4)\\
+\begin{equation}
+\mathcal{L} = -\sum_{k=1}^{|\mathcal{O}|} P(l_{n+1})(k) \log(P(\hat{l}_{n+1})(k)) \tag{4}
+\label{eq:4}
+\end{equation}
 
 donde \(P(\hat{l}_{n+1})(k)\) representa la probabilidad predicha 
 de visitar la \(k\)-ésima ubicación y \(P(l_{n+1})(k)\) es la verdad 
